@@ -16,7 +16,7 @@ import optimal
 import stars_and_bars as sab
 
 
-def initialize_table(levels=4, pieces=15, filename="qtable"):
+def initialize_table(levels=4, pieces=15, filename="q_learning/qtable"):
     """Creates and a dictionary to represent a q table. The dictionary is then
     serialized using pickle and dumped into an output file.
 
@@ -42,7 +42,7 @@ def initialize_table(levels=4, pieces=15, filename="qtable"):
     outfile.close()
 
 
-def initialize_weights(levels=4, near_sighted=True, filename="weights"):
+def initialize_weights(levels=4, near_sighted=True, filename="q_learning/weights"):
     """Creates and an array to represent the value function of a defender. The array is
     then serialized using pickle and dumped into an output file.
 
@@ -61,7 +61,7 @@ def initialize_weights(levels=4, near_sighted=True, filename="weights"):
     outfile.close()
 
 
-def load_table(filename="qtable"):
+def load_table(filename="q_learning/qtable"):
     """Deserializes a dictionary representation of a q table.
 
     Args:
@@ -75,7 +75,7 @@ def load_table(filename="qtable"):
     return new_dict
 
 
-def load_weights(filename="weights"):
+def load_weights(filename="q_learning/weights"):
     """Deserializes an array representation of a value function.
 
     Args:
@@ -89,8 +89,8 @@ def load_weights(filename="weights"):
     return weights
 
 
-def save_table(table, filename="qtable"):
-    """A dictionary representation of a q table is serialized using pickle and dumped 
+def save_table(table, filename="q_learning/qtable"):
+    """A dictionary representation of a q table is serialized using pickle and dumped
     into an output file.
 
     Args:
@@ -183,6 +183,8 @@ def main():
     discount = 0.95
     qtable = load_table()
     weights = load_weights()
+    
+    print(qtable)
 
     for iteration in range(number_of_games):
         # Generates game with random starting position.
