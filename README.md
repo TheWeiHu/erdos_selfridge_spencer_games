@@ -11,4 +11,4 @@ The project will also fulfill the requirements of the [CSI 4900 - Honours Projec
 This [research paper](https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf) is the original inspiration for the project.
 
 
-![alt text](https://imgur.com/a/jk7qUgM "ESS Game Play")
+![alt text](https://i.imgur.com/XMMzVQm.png "ESS Game Play")
