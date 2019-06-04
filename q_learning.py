@@ -13,7 +13,7 @@ import pickle
 import random
 import game
 import optimal
-import stars_and_bars as sab
+from lib import stars_and_bars as sab
 
 
 def initialize_table(levels=4, pieces=15, filename="q_learning/qtable"):
