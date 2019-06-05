@@ -45,11 +45,11 @@ def far_sighted_algorithm(position, weights):
         for _ in range(level):
             cumulative_value.append((cumulative_value[-1][0] + weights[i], i))
 
-    while gamma > 0 or (gamma == 0 and current_index > 0):
+    while gamma > 0 and current_index > 0:
         current_level = cumulative_value[current_index][1]
         next_cumulative_value = cumulative_value[current_index - 1][0]
         # Recursively, only includes a large piece when necessary: see proof.
-        if next_cumulative_value < gamma:
+        if next_cumulative_value - gamma < -1e-10: # Eliminates rounding errors.
             optimal_set[current_level] += 1
             gamma -= weights[current_level]
         current_index -= 1
