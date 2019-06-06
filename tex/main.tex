@@ -66,7 +66,7 @@
 
 \section{Introduction} % Unnumbered section
 
-An Erdos-Selfridge-Spencer game consists of an attacker $A$, a defender $D$, and a position $P$. We use $p_{i}$ to represent a piece that is $i$ levels away from the top of the board. In other words, a piece at $p_{0}$, if not destroyed by the defender this turn, will attain tenure and provide a point for the attacker.
+An Erd\"os-Selfridge-Spencer game consists of an attacker $A$, a defender $D$, and a game state $S$. We use $p_{i}$ to represent a piece that is $i$ levels away from the top of the board. In other words, a piece $p_{0}$, if not destroyed by the defender this turn, will attain tenure and provide a point for the attacker.
 
 \begin{defn}
 Let $v$ be a value function, which maps a level $i$ to a real value representing the value of a $p_{i}$ piece. A value function is represented by an array $(w_{0}, w_{1}, w_{2}, ... , w_{k})$ where:
@@ -76,7 +76,7 @@ Let $v$ be a value function, which maps a level $i$ to a real value representing
 \end{defn}
 
 \begin{defn}
-Let $S$ be an array $(a_{0}, a_{1}, a_{2}, ... , a_{k})$ representing a multiset of pieces consisting of $a_{i}$ pieces on the $i$th level. We define the value function applied to $S$ as:
+Let $S$ be a game state. At any point, the state can be described by a $K$ dimensional vector $(n_{0}, n_{1}, n_{2}, ... , n_{k})$ representing a multiset of pieces consisting of $a_{i}$ pieces on the $i$th level. We define the value function applied to $S$ as:
 \begin{equation*}
 	v(S) = \sum_{i = 0}^k a_{i}v(i).
 \end{equation*}

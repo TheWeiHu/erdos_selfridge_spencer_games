@@ -44,10 +44,10 @@ def main():
             ratio = env.score / env.potential
             if ratio < min_ratio:
                 min_ratio = ratio
-                min_position = [ratio, position]
+                min_position = [env.potential, env.score, position]
             if ratio > max_ratio:
                 max_ratio = ratio
-                max_position = [ratio, position]
+                max_position = [env.potential, env.score, position]
         if env.score < math.floor(env.potential):
             print("YELP!")
             exit()
@@ -57,7 +57,7 @@ def main():
     print(max_position)
 
     # Plots Results.
-    # plot(potentials, scores)
+    plot(potentials, scores)
 
 
 if __name__ == "__main__":

@@ -179,11 +179,11 @@ def main():
     # initialize_weights()
 
     # Training parameters
-    number_of_games = 10000000
+    number_of_games = 1000000
     discount = 0.95
     qtable = load_table()
     weights = load_weights()
-    
+  
     print(qtable)
 
     for iteration in range(number_of_games):
