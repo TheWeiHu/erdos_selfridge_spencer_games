@@ -1,6 +1,6 @@
-"""Erdos Selfridge Spencer Game Environment
+"""Erdos-Selfridge-Spencer Game Environment
 
-Erdos Selfridge Spencer Game environemnt for the attacking player.
+Erdos-Selfridge-Spencer Game environemnt for the attacking player.
 
 Note: the board is zero-indexed: if not destroyed, a piece on the 0-th level will get
 tenure this turn.
