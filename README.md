@@ -1,7 +1,7 @@
 # erdos-selfridge-spencer-games
 
 Summary:
-Using reinforcement learning to train attackers to target suboptimal defenders (near-sighted / far-sighted).
+Using reinforcement learning to train attackers to target suboptimal defenders (nearsighted / farsighted).
 
 This project has been ongoing since September 2018, under the supervision of Professor [Lucia Moura](http://www.site.uottawa.ca/~lucia/), and Professor [Yongyi Mao](http://www.site.uottawa.ca/~yymao/index_main.htmlhttp://www.site.uottawa.ca/~yymao/index_main.html).
 
