@@ -1,14 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Lachaise Assignment
-% LaTeX Template
-% Version 1.0 (26/6/2018)
-%
-% This template originates from:
-% http://www.LaTeXTemplates.com
 %
 % Authors:
-% Marion Lachaise & François Févotte
-% Vel (vel@LaTeXTemplates.com)
+% Wei Hu (whu061@uottawa.ca)
 %
 % License:
 % CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
@@ -16,7 +9,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %----------------------------------------------------------------------------------------
-%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+% PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
 \documentclass{article}
@@ -25,6 +18,8 @@
 
 % Theorems Format
 \usepackage{amsthm}
+% Fractions Format
+\usepackage{xfrac}
 
 \theoremstyle{plain}
 \newtheorem{thm}{Theorem}[section]
@@ -45,10 +40,10 @@
 \newcommand{\floor}[1]{\lfloor #1 \rfloor}
 
 %----------------------------------------------------------------------------------------
-%	HEADER
+% HEADER
 %----------------------------------------------------------------------------------------
 
-\title{CSI 4900: Honours Project Report} % Title of the assignment
+\title{\underline{CSI 4900}: Honours Project Report} % Title of the assignment
 
 \author{Wei Hu\\ \texttt{whu061@uottawa.ca}} % Author name and email address
 
@@ -61,102 +56,193 @@
 \maketitle % Print the title
 
 %----------------------------------------------------------------------------------------
-%	INTRODUCTION
+% INTRODUCTION
 %----------------------------------------------------------------------------------------
 
 \section{Introduction} % Unnumbered section
 
-An Erd\"os-Selfridge-Spencer game consists of an attacker $A$, a defender $D$, and a game state $S$. We use $p_{i}$ to represent a piece that is $i$ levels away from the top of the board. In other words, a piece $p_{0}$, if not destroyed by the defender this turn, will attain tenure and provide a point for the attacker.
+An Erd\"os-Selfridge-Spencer game consists of an attacker $A$, a defender $D$, and a game state represented by an array $S$, where $S[i]$ is the number of pieces on the board that is $i$ levels away from the top of the board. The board is zero-index so that a piece which is at level $0$ will attain tenure and provide a point for the attacker, if not destroyed by the defender this turn.
 
 \begin{defn}
-Let $v$ be a value function, which maps a level $i$ to a real value representing the value of a $p_{i}$ piece. A value function is represented by an array $(w_{0}, w_{1}, w_{2}, ... , w_{k})$ where:
-\begin{equation*}
-		v(i) = w_{i}.
-\end{equation*}
+  Let $v$ be a value function, which maps a level $i$ to a real number representing the value of a piece at level $i$. A value function can be represented by an array $(w_{0}, w_{1}, w_{2}, ... , w_{k})$ where:
+  \begin{equation*}
+    v(i) = w_{i}.
+  \end{equation*}
 \end{defn}
 
 \begin{defn}
-Let $S$ be a game state. At any point, the state can be described by a $K$ dimensional vector $(n_{0}, n_{1}, n_{2}, ... , n_{k})$ representing a multiset of pieces consisting of $a_{i}$ pieces on the $i$th level. We define the value function applied to $S$ as:
-\begin{equation*}
-	v(S) = \sum_{i = 0}^k a_{i}v(i).
-\end{equation*}
+  Let $S$ be a state on a board with $k$ levels. The value function applied to $S$ is defined as:
+  \begin{equation*}
+    v(S) = \sum_{i = 0}^k S[i]v(i).
+  \end{equation*}
 \end{defn}
 
 A defender would apply its value function to the two sets partitioned by the attackers, and it would destroy the set it deems to be more valuable.
 
 \begin{thm}
-The optimal value function for the defender is:
-% Math equation/formula
-\begin{equation}
-	v_{*}(i) = \frac{1}{2^{i+1}}.
-\end{equation}
+  The optimal value function $v_{*}$ for the defender is defined as:
+  % Math equation/formula
+  \begin{equation}
+    v_{*}(i) = \frac{1}{2^{i+1}}.
+  \end{equation}
 \end{thm}
 
-\subsection{Project Summary}
-
-We intend to investigate using reinforcement learning to train attackers to exploit the sub-optimality of biased defenders (nearsighted and farsighted).
-
 %----------------------------------------------------------------------------------------
-%	BIASED DEFENDERS
+% BIASED DEFENDERS
 %----------------------------------------------------------------------------------------
 
 \section{Biased Defenders} % Numbered section
 
-We notice that the optimal value function satisfies this property that $v(i) = 2v(i+1)$. By deviating from this equality, we create sub-optimal defenders with biases that either favour pieces that are closer to the top of the board, or those that are at the bottom, depending on the direction of the inequality.
+We observe that the optimal value function satisfies the property that $v(i) = 2v(i+1)$. By deviating from this equality, we can create sub-optimal defenders. These defenders either overvalue pieces that are closer to the top of the board, or those that are the furthest away. This bias is dependent on the direction of the inequality.
 
 \begin{defn}
-A nearsighted (myopic) defender is a defender whose value function satisfies the property, for all defined values of $i$:
-\begin{equation}
-	v(i) > 2v(i + 1).
-\end{equation}
-\end{defn}
-
-A nearsighted defender disproportionally values pieces that are close to the top of the board. 
-
-\begin{defn}
-A farsighted defender is a defender whose values function satisfies the property, for all defined values of $i$:
-\begin{equation}
-	v(i) < 2v(i + 1).
-\end{equation}
+  A farsighted defender is a defender whose values function satisfies:
+  \begin{equation}
+    v(i) < 2v(i+1).
+  \end{equation}
+  for all $0 <= i < k$, where $k$ is the length of the board.
 \end{defn}
 
 A farsighted defender disproportionally value pieces that are close to the bottom of the board. \\
 
-\begin{thm}
-When playing against an optimal defender, the optimal approach for the attacker is to try to make the value according to $v_{*}$ of the two partitioned sets as close as possible. 
-\end{thm}
+\begin{defn}
+  A nearsighted (myopic) defender is a defender whose value function satisfies:
+  \begin{equation}
+    v(i) > 2v(i+1).
+  \end{equation}
+  for all $0 <= i < k$, where $k$ is the length of the board.
+\end{defn}
 
-In order to maximize the number of pieces tenured, it is sufficient to maximize. at each turn, the value according to $v_{*}$ of the surviving pieces. This idea can be proven in two steps: 
-\begin{enumerate}
-  \item show that against an optimal defender, the best score that can be achieved for starting position $S$ is $\floor{v_{*}(S)}$.
-  \item playing according to \textit{Theorem 2.1} achieves that best score. 
-\end{enumerate}
+A nearsighted defender will overvalue pieces that are near the top of the board.
 
 %------------------------------------------------
 
-\subsection{Nearsighted (Myopic) Defender}
+\section{Project Summary}
+
+We intend use various reinforcement learning (RL) techniques to train attackers to exploit the sub-optimality of biased defenders, both nearsighted and farsighted. We observe that playing optimally against a biased defender is more complicated:
 
 \begin{thm}
-To maximize to real value of the surviving pieces on any round against a nearsighted defender, we follow the following algorithm:
+  When playing against an optimal defender, the optimal approach for the attacker is to try to make the value according to $v_{*}$ of the two partitioned sets as close as possible.
+\end{thm}
+
+This approach maximizes, at each turn, the value according to $v_{*}$ of the surviving pieces. Theorem 3.1 can be proved by:
+\begin{enumerate}
+  \item Showing that when playing against an optimal defender, the best score that can be achieved for a starting state $S$ is $\floor{v_{*}(S)}$.
+  \item Showing that playing according to Theorem 3.1 guarantees that we will score at least $\floor{v_{*}(S)}$.
+\end{enumerate}
+
+However, when playing a biased defender, it is possible for the real value of the surviving subset to be larger than that of the one destroyed. Due to its bias, a set could have higher value than another set according to $v_{*}$, but be deemed less valuable according to the defender's $v$. As a result, we can be certain that the approach described in Theorem 3.1 is not optimal.\\
+
+The idea here is to examine how various RL approaches such as Q-learning, policy gradient, and actor critic can "discover" more optimal approaches against these defenders.
+
+\subsection{Challenges}
+In the original paper first introducing Erd\"os-Selfridge-Spencer games as test environments for RL algorithms (Raghu et al. 2017), the focus was mainly on training defender agents. Defenders have an action space of size two, while the attackers, which is what we will mainly be training, has an $O(2^n)$ action space.\\
+
+While the paper provides a method to train attackers, it employs a techniques through which the attacker's action space is made linear. This reduction not only substantially increased the proportion of optimal moves (making the game easier for the attacker), but the reduced action space is also only guaranteed to contain the optimal move against the optimal defender. \\
+
+Furthermore, rewards are sparse, and we only get feedback whenever a piece gets tenure. Since most of the attacker's action are bad and lead to no reward, it can be difficult to gather good training feedback.
+%------------------------------------------------
+\section{Algorithms }
+We were able to analytically prove properties about biased defenders. We provide two algorithms which maximizes the real value of the surviving pieces at the end of each turn against any nearsighted or farsighted defender.\\
+
+Two core ideas behind the algorithms  are laid out in the following lemmas:
+
+\begin{lem}
+  If a set of pieces $S$ which are all further away from tenure than a piece at level $i$ has $v(S) >= v(i)$, then there is a subset $S'$ of $S$ that satisfies $v(S') = v(i)$.
+\end{lem}
+
+
+\begin{proof}
+  Showing lemma 4.1 is equivalent to showing that if there is a fraction $p = \sfrac{1}{2^i}$ and a multiset $M$ of fractions which contains only elements of the form $\sfrac{1}{2^{i+j}}$ where $j>0$ and adds up to a value greater than $p$, then a subset of $M$ adds up to exactly $p$. First, we create a new multiset $M'$, by dividing each element in $M$ by $p$. Notice the problem is equivalent to showing that a subset of $M'$ adds up to 1. Since, the sum of $M'$ must be greater than 1, and $M'$ contains only powers of $\sfrac{1}{2}$, lemma 1.X completes the proof.
+\end{proof}
+
+\begin{lem}
+  Let $v$ be the value function of a farsighted defender. Let $A$, $B$ be two sets of pieces. If every piece in $B$ is closer to tenure than any piece in $A$, and  $B$ has greater value according to $v$, then $B$ has greater value according to $v_{*}$ as well.
+\end{lem}
+
+\begin{proof}
+  If $A$ is greater than $B$ according $v*$, then we can continually apply lemma 4.1, and map each piece in $B$ to a subset of $A$, never reusing the same piece from $A$ more than once (and there will be pieces left over in $A$, not mapped to anything in $B$). In each of these mappings, each piece from the subset of $A$ will be valued according to $v*$ as being worth $\sfrac{1}{2^i}$ of the value of the piece in $B$, where $i$ is the number of levels the piece in $A$ is away from the piece in $B$. According to $v$, however, the same piece would be worth more than $\sfrac{1}{2^i}$ the value of the piece in $B$ since $v(i) < 2v(i+1)$ for a farsighted defender. Thus, the pieces in the set from $A$ will be valued less by $v$ than the piece in $B$. Applying this to every set in the mapping, we conclude $A$ will be valued higher than $B$ by $v$. We complete the proof by contraposition.
+\end{proof}
+
+Similarly, we also have:
+
+\begin{lem}
+  Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two sets of pieces. If every piece in $B$ is further from tenure than any piece in $A$, and $B$ has greater value according to $v$, then $B$ has greater value according to $v_{*}$ as well.
+\end{lem}
+
+%------------------------------------------------
+
+\subsection{Farsighted Defenders}
+
+\begin{thm}
+  The following algorithm maximizes the real value of the surviving pieces at the end of each turn against any farsighted defender.
 \end{thm}
 
 \begin{center}
-	\begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
-		\begin{algorithm}[H]
-			\KwIn{a board position $S$, and the value function of a nearsighted defender $v$}  % Algorithm inputs
-			\KwResult{$(S_{1}, S_{2})$, such that $a+b = c + d$} % Algorithm outputs/results
-			\medskip
-			\If{$\vert b\vert > \vert a\vert$}{
-				exchange $a$ and $b$ \;
-			}
-			$c \leftarrow a + b$ \;
-			$z \leftarrow c - a$ \;
-			$d \leftarrow b - z$ \;
-			{\bf return} $(c,d)$ \;
-			\caption{\texttt{Maximizing Real Value Playing Nearsighted Defender}} % Algorithm name
-			\label{alg:nearsighted}   % optional label to refer to
-		\end{algorithm}
-	\end{minipage}
+  \begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
+    \begin{algorithm}[H]
+      \KwIn{a board position $S$, and the value function of a farsighted defender $v$}  % Algorithm inputs
+      \KwResult{$(c, d)$, such that $a+b = c + d$} % Algorithm outputs/results
+      \medskip
+      \If{$\vert b\vert > \vert a\vert$}{
+        exchange $a$ and $b$ \;
+      }
+      $z \leftarrow c - a$ \;
+      $d \leftarrow b - z$ \;
+      {\bf return} $(c,d)$ \;
+      \caption{\texttt{Minimizing $v_{*}$ Value of Destroyed Set Against Farsighted Defenders}} % Algorithm name
+      \label{alg:farsighted}   % optional label to refer to
+    \end{algorithm}
+  \end{minipage}
+\end{center}
+
+\begin{proof}
+
+\end{proof}
+
+\newpage
+
+\subsection{Nearsighted Defenders}
+
+\begin{thm}
+  The following algorithm maximizes the real value of the surviving pieces at the end of each turn against any nearsighted defender.
+\end{thm}
+
+\begin{center}
+  \begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
+    \begin{algorithm}[H]
+
+      \caption{\texttt{Minimizing $v_{*}$ Value of Destroyed Set Against Nearsighted Defenders}} % Algorithm name
+      \label{alg:nearsighted}   % optional label to refer to
+
+      \KwIn{a board position $S$ with $k$ levels, and the value function of a nearsighted defender $v$}  % Algorithm inputs
+      \KwResult{ a partition of the board $(S_{1}, S_{2})$ which guarantees the subset that the defender will destroy has the lowest possible value according to $v_{*}$} % Algorithm outputs/results
+
+      \medskip
+      $\gamma \leftarrow \frac{v(S)}{2}$\;
+      $best\_set \leftarrow S$ \;
+      $current\_set \leftarrow (0, 0, 0, ...)$ \;
+
+      \For{$i \leftarrow 0$ to $k$} {
+        \For{$piece \leftarrow 0$ to $S[i]$} {
+        		\If{$v(i) < \gamma$}{
+        			 $current\_set[i]{+}{+}$\;
+        			 $\gamma {-}{=} v(i)$\;
+      		}
+      		\Else{
+      			$temp  \leftarrow current\_set$\;
+      			$temp[i]{+}{+}$\;
+      			\If{$v_{*}(temp) < v_{*}(best\_set) $}{
+        			 $best\_set \leftarrow temp$ \;
+      		}
+      		$i{+}{+}$ \;
+      		}
+        }
+      }
+
+      {\bf return} $(best\_set, (P - best\_set))$ \;
+    \end{algorithm}
+  \end{minipage}
 \end{center}
 
 \begin{proof}
@@ -164,59 +250,39 @@ To maximize to real value of the surviving pieces on any round against a nearsig
 \end{proof}
 
 
-	
-%------------------------------------------------
-
-\subsection{Farsighted Defender}
-
-In malesuada ullamcorper urna, sed dapibus diam sollicitudin non. Donec elit odio, accumsan ac nisl a, tempor imperdiet eros. Donec porta tortor eu risus consequat, a pharetra tortor tristique. Morbi sit amet laoreet erat. Morbi et luctus diam, quis porta ipsum. Quisque libero dolor, suscipit id facilisis eget, sodales volutpat dolor. Nullam vulputate interdum aliquam. Mauris id convallis erat, ut vehicula neque. Sed auctor nibh et elit fringilla, nec ultricies dui sollicitudin. Vestibulum vestibulum luctus metus venenatis facilisis. Suspendisse iaculis augue at vehicula ornare. Sed vel eros ut velit fermentum porttitor sed sed massa. Fusce venenatis, metus a rutrum sagittis, enim ex maximus velit, id semper nisi velit eu purus.
-
-\begin{center}
-	\begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
-		\begin{algorithm}[H]
-			\KwIn{a board position $P$, and the value function of a nearsighted defender $v$}  % Algorithm inputs
-			\KwResult{$(c, d)$, such that $a+b = c + d$} % Algorithm outputs/results
-			\medskip
-			\If{$\vert b\vert > \vert a\vert$}{
-				exchange $a$ and $b$ \;
-			}
-			$c \leftarrow a + b$ \;
-			$z \leftarrow c - a$ \;
-			$d \leftarrow b - z$ \;
-			{\bf return} $(c,d)$ \;
-			\caption{\texttt{Maximizing Real Value Playing Nearsighted Defender}} % Algorithm name
-			\label{alg:nearsighted}   % optional label to refer to
-		\end{algorithm}
-	\end{minipage}
-\end{center}
-
-Fusce varius orci ac magna dapibus porttitor. In tempor leo a neque bibendum sollicitudin. Nulla pretium fermentum nisi, eget sodales magna facilisis eu. Praesent aliquet nulla ut bibendum lacinia. Donec vel mauris vulputate, commodo ligula ut, egestas orci. Suspendisse commodo odio sed hendrerit lobortis. Donec finibus eros erat, vel ornare enim mattis et.
-
-Mauris interdum porttitor fringilla. Proin tincidunt sodales leo at ornare. Donec tempus magna non mauris gravida luctus. Cras vitae arcu vitae mauris eleifend scelerisque. Nam sem sapien, vulputate nec felis eu, blandit convallis risus. Pellentesque sollicitudin venenatis tincidunt. In et ipsum libero. Nullam tempor ligula a massa convallis pellentesque.
-
 %----------------------------------------------------------------------------------------
+\section{Machine Learning}
+\section{Observations}
+\section{Future Work}
 
 \end{document}
 
 %----------------------------------------------------------------------------------------
-%	TEMPLATE ELEMENTS
+% TO DO LIST
+
+% Introduce ESS Games, and mention how our variety cares about how many pieces get promoted rather than whether any piece gets promoted.
+% Proofs about random defenders, splitting lemma etc (from previous type-up)
+% Add bibliography.
+
+%----------------------------------------------------------------------------------------
+% TEMPLATE ELEMENTS
 %----------------------------------------------------------------------------------------
 
 % Numbered question, with subquestions in an enumerate environment
 %\begin{question}
-%	Quisque ullamcorper placerat ipsum. Cras nibh. Morbi vel justo vitae lacus tincidunt ultrices. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+% Quisque ullamcorper placerat ipsum. Cras nibh. Morbi vel justo vitae lacus tincidunt ultrices. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
 %
-%	% Subquestions numbered with letters
-%	\begin{enumerate}[(a)]
-%		\item Do this.
-%		\item Do that.
-%		\item Do something else.
-%	\end{enumerate}
+% % Subquestions numbered with letters
+% \begin{enumerate}[(a)]
+%   \item Do this.
+%   \item Do that.
+%   \item Do something else.
+% \end{enumerate}
 %\end{question}
 
 % Numbered question, with an optional title
 %\begin{question}[\itshape (with optional title)]
-%	In congue risus leo, in gravida enim viverra id. Donec eros mauris, bibendum vel dui at, tempor commodo augue. In vel lobortis lacus. Nam ornare ullamcorper mauris vel molestie. Maecenas vehicula ornare turpis, vitae fringilla orci consectetur vel. Nam pulvinar justo nec neque egestas tristique. Donec ac dolor at libero congue varius sed vitae lectus. Donec et tristique nulla, sit amet scelerisque orci. Maecenas a vestibulum lectus, vitae gravida nulla. Proin eget volutpat orci. Morbi eu aliquet turpis. Vivamus molestie urna quis tempor tristique. Proin hendrerit sem nec tempor sollicitudin.
+% In congue risus leo, in gravida enim viverra id. Donec eros mauris, bibendum vel dui at, tempor commodo augue. In vel lobortis lacus. Nam ornare ullamcorper mauris vel molestie. Maecenas vehicula ornare turpis, vitae fringilla orci consectetur vel. Nam pulvinar justo nec neque egestas tristique. Donec ac dolor at libero congue varius sed vitae lectus. Donec et tristique nulla, sit amet scelerisque orci. Maecenas a vestibulum lectus, vitae gravida nulla. Proin eget volutpat orci. Morbi eu aliquet turpis. Vivamus molestie urna quis tempor tristique. Proin hendrerit sem nec tempor sollicitudin.
 %\end{question}
 
 % File contents
@@ -236,10 +302,10 @@ Mauris interdum porttitor fringilla. Proin tincidunt sodales leo at ornare. Done
 
 % Command-line "screenshot"
 %\begin{commandline}
-%	\begin{verbatim}
-%		$ chmod +x hello.py
-%		$ ./hello.py
+% \begin{verbatim}
+%   $ chmod +x hello.py
+%   $ ./hello.py
 %
-%		Hello World!
-%	\end{verbatim}
+%   Hello World!
+% \end{verbatim}
 %\end{commandline}

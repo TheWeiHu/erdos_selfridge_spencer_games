@@ -9,8 +9,10 @@ Todo:
 """
 
 import itertools
+import math
 import pickle
 import random
+import matplotlib.pyplot as plt
 import game
 import optimal
 from lib import stars_and_bars as sab
@@ -157,6 +159,7 @@ def get_action(state, qtable, explore=0.05):
 
 def output_action(state, action):
     """ Generates the partition corresponding to a given state and action.
+    If an invalid action is provided, one of the sets will be the empty set.
 
     Args:
         state: the current state of the game.
@@ -166,6 +169,8 @@ def output_action(state, action):
     """
     # Do this part analytically, if necessary (reduce from exponential to linear).
     subsets = list(itertools.product(*(range(x + 1) for x in state)))
+    if action >= len(subsets):
+        action = 0
     partition = subsets[action]
     return list(partition), [i - j for i, j in zip(state, partition)]
 
@@ -183,6 +188,9 @@ def main():
     discount = 0.95
     qtable = load_table()
     weights = load_weights()
+
+    # Keeps track of gameplay quality.
+    delta = []
 
     print(qtable)
 
@@ -205,10 +213,15 @@ def main():
             row[action] = new_q
             qtable[tuple(current_state)] = row
             score = new_score
+        delta.append(env.score - math.floor(env.potential))
 
         # Makes a backup for every percentage of progress.
         if iteration % (number_of_games / 100) == 0:
             save_table(qtable)
+
+    print(sum(delta) / len(delta))
+    plt.plot(delta)
+    plt.show()
 
 
 if __name__ == "__main__":
