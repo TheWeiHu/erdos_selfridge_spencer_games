@@ -93,7 +93,7 @@ A defender would apply its value function to the two sets partitioned by the att
 
 \section{Biased Defenders} % Numbered section
 
-We observe that the optimal value function satisfies the property that $v(i) = 2v(i+1)$. By deviating from this equality, we can create sub-optimal defenders. These defenders either overvalue pieces that are closer to the top of the board, or those that are the furthest away. This bias is dependent on the direction of the inequality.
+We observe that the optimal value function satisfies the property that $v(i) = 2v(i+1)$. By deviating from this equality, we can create sub-optimal defenders. These defenders either overvalue pieces that are close to the top of the board, or those that are the furthest away. This bias is dependent on the direction of the inequality.
 
 \begin{defn}
   A farsighted defender is a defender whose values function satisfies:
@@ -119,13 +119,13 @@ A nearsighted defender will overvalue pieces that are near the top of the board.
 
 \section{Project Summary}
 
-We intend use various reinforcement learning (RL) techniques to train attackers to exploit the sub-optimality of biased defenders, both nearsighted and farsighted. We observe that playing optimally against a biased defender is more complicated:
+We intend use various reinforcement learning (RL) techniques to train attackers to exploit the sub-optimality of biased defenders, both nearsighted and farsighted. We observe that playing optimally against a biased defender is more complicated than playing optimally against an optimal defender:
 
 \begin{thm}
   When playing against an optimal defender, the optimal approach for the attacker is to try to make the value according to $v_{*}$ of the two partitioned sets as close as possible.
 \end{thm}
 
-This approach maximizes, at each turn, the value according to $v_{*}$ of the surviving pieces. Theorem 3.1 can be proved by:
+This approach maximizes, at each turn, the value according to $v_{*}$ of the surviving pieces. A linear algorithm exists for finding the partition described in Theorem 3.1. The theorem can be proved by:
 \begin{enumerate}
   \item Showing that when playing against an optimal defender, the best score that can be achieved for a starting state $S$ is $\floor{v_{*}(S)}$.
   \item Showing that playing according to Theorem 3.1 guarantees that we will score at least $\floor{v_{*}(S)}$.
@@ -148,12 +148,12 @@ We were able to analytically prove properties about biased defenders. We provide
 Two core ideas behind the algorithms  are laid out in the following lemmas:
 
 \begin{lem}
-  If a set of pieces $S$ which are all further away from tenure than a piece at level $i$ has $v(S) >= v(i)$, then there is a subset $S'$ of $S$ that satisfies $v(S') = v(i)$.
+  If a set of pieces $S$ which are all further away from tenure than a piece at level $i$ has $v_{*}(S) >= v_{*}(i)$, then there is a subset $S'$ of $S$ that satisfies $v_{*}(S') = v_{*}(i)$.
 \end{lem}
 
 
 \begin{proof}
-  Showing lemma 4.1 is equivalent to showing that if there is a fraction $p = \sfrac{1}{2^i}$ and a multiset $M$ of fractions which contains only elements of the form $\sfrac{1}{2^{i+j}}$ where $j>0$ and adds up to a value greater than $p$, then a subset of $M$ adds up to exactly $p$. First, we create a new multiset $M'$, by dividing each element in $M$ by $p$. Notice the problem is equivalent to showing that a subset of $M'$ adds up to 1. Since, the sum of $M'$ must be greater than 1, and $M'$ contains only powers of $\sfrac{1}{2}$, lemma 1.X completes the proof.
+ Showing lemma 4.1 is equivalent to showing that for a fraction $p = \sfrac{1}{2^i}$ and a multiset $M$ of fractions which contains only elements of the form $\sfrac{1}{2^{i+j}}$ where $j>0$. If the elements in $M$ adds up to a value greater than $p$, then a subset of $M$ adds up to exactly $p$. To prove, we first create a new multiset $M'$, by dividing each element in $M$ by $p$. Notice the problem is equivalent to showing that a subset of $M'$ adds up to 1. Since, the sum of $M'$ must be greater than 1, and $M'$ contains only powers of $\sfrac{1}{2}$, lemma 1.X completes the proof.
 \end{proof}
 
 \begin{lem}
@@ -161,13 +161,13 @@ Two core ideas behind the algorithms  are laid out in the following lemmas:
 \end{lem}
 
 \begin{proof}
-  If $A$ is greater than $B$ according $v*$, then we can continually apply lemma 4.1, and map each piece in $B$ to a subset of $A$, never reusing the same piece from $A$ more than once (and there will be pieces left over in $A$, not mapped to anything in $B$). In each of these mappings, each piece from the subset of $A$ will be valued according to $v*$ as being worth $\sfrac{1}{2^i}$ of the value of the piece in $B$, where $i$ is the number of levels the piece in $A$ is away from the piece in $B$. According to $v$, however, the same piece would be worth more than $\sfrac{1}{2^i}$ the value of the piece in $B$ since $v(i) < 2v(i+1)$ for a farsighted defender. Thus, the pieces in the set from $A$ will be valued less by $v$ than the piece in $B$. Applying this to every set in the mapping, we conclude $A$ will be valued higher than $B$ by $v$. We complete the proof by contraposition.
+ If $A$ is greater than $B$ according $v*$, then we can continually apply lemma 4.1, and map each piece in $B$ to a subset of $A$, never reusing the same piece from $A$ more than once (and there will be pieces left over in $A$, not mapped to anything in $B$). In each of these mappings, each piece from the subset of $A$ will be valued according to $v*$ as being worth $\sfrac{1}{2^i}$ of the value of the piece in $B$, where $i$ is the number of levels the piece in $A$ is away from the piece in $B$. According to $v$, however, the same piece would be worth more than $\sfrac{1}{2^i}$ the value of the piece in $B$, since $v(i) < 2v(i+1)$ for a farsighted defender. Thus, the pieces in the set from $A$ will be valued less by $v$ than the piece in $B$. Applying this to every set in the mapping, we conclude $A$ will be valued higher than $B$ by $v$. We complete the proof by contraposition.
 \end{proof}
 
 Similarly, we also have:
 
 \begin{lem}
-  Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two sets of pieces. If every piece in $B$ is further from tenure than any piece in $A$, and $B$ has greater value according to $v$, then $B$ has greater value according to $v_{*}$ as well.
+Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two sets of pieces. If every piece in $B$ is further from tenure than any piece in $A$, and $B$ has greater value according to $v$, then $B$ has greater value according to $v_{*}$ as well.
 \end{lem}
 
 %------------------------------------------------
@@ -221,18 +221,21 @@ Similarly, we also have:
       \medskip
       $\gamma \leftarrow \frac{v(S)}{2}$\;
       $best\_set \leftarrow S$ \;
+      $best\_value \leftarrow v_{*}(S)$ \;
       $current\_set \leftarrow (0, 0, 0, ...)$ \;
+      $current\_value \leftarrow 0$ \;
 
       \For{$i \leftarrow 0$ to $k$} {
         \For{$piece \leftarrow 0$ to $S[i]$} {
         		\If{$v(i) < \gamma$}{
         			 $current\_set[i]{+}{+}$\;
         			 $\gamma {-}{=} v(i)$\;
+        			 $current\_value {+}{=} v_{*}(i)$\;
       		}
       		\Else{
       			$temp  \leftarrow current\_set$\;
       			$temp[i]{+}{+}$\;
-      			\If{$v_{*}(temp) < v_{*}(best\_set) $}{
+      			\If{$current $}{
         			 $best\_set \leftarrow temp$ \;
       		}
       		$i{+}{+}$ \;
@@ -246,14 +249,27 @@ Similarly, we also have:
 \end{center}
 
 \begin{proof}
+The idea behind the algorithm is that as we iterate through the board, starting with the more valuable pieces (according to $v_{*}$), we add to current\_set the pieces we are certain...
+
 
 \end{proof}
 
 
 %----------------------------------------------------------------------------------------
 \section{Machine Learning}
+\subsection{Q-Learning}
+The traditional Q-learning approach using a Q-table is only feasible for small tables.
+\subsubsection{Deep Q-Learning}
+We propose a method for using a neural network to represent the Q table, using a method to compress the action space?
+
+\subsection{Policy Gradient}
+\subsection{Actor Critic}
+
+%----------------------------------------------------------------------------------------
+
 \section{Observations}
 \section{Future Work}
+Find proof for actual optimal play. Is playing "greedily" every turn really the best approach?
 
 \end{document}
 

@@ -36,6 +36,8 @@ O = tf.Variable(
 
 # Training parameters:
 N_GAMES = 100000
+# Note that having a large learning rate leads to large updates, which fills the
+# matrices with NAN.
 L_RATE = 1e-7
 DISCOUNT = 0.95
 EPSILON = 0.95
@@ -44,8 +46,14 @@ D_WEIGHTS = q.load_weights("deep_q_learning/weights")
 
 
 def neural_net(input_state):
-    """
-    Neural network approximation of q table.
+    """ Attaches the different omponents of the Tensorflow graph forming the neural
+    network approximation of the q table.
+
+    Args:
+        input_state: the current state of the game, stored in an input placeholder
+        fed in from the game environment.
+    Returns:
+        the output of the network.
     """
     # Two fully connected layers:
     level_1 = tf.matmul(tf.expand_dims(input_state, 0), W1)
@@ -72,13 +80,16 @@ def main():
         shape=[1, buckets.maximum_choices(N_PIECES, N_LEVELS)], dtype=tf.float32
     )
 
+    # Note reduce_sum() leads to large updates, which fills the matrices with NAN.
     loss = tf.reduce_mean(tf.square(next_q_values - q_values))
     update = tf.train.GradientDescentOptimizer(learning_rate=L_RATE).minimize(loss)
 
     # Add ops to save and restore all the variables.
     saver = tf.train.Saver()
 
-    ratio = []
+    # Keeps track of gameplay quality compared to the best expected value against an
+    # optimal defender.
+    delta = []
 
     # Starts training.
     with tf.Session() as sess:
@@ -111,13 +122,13 @@ def main():
                     feed_dict={INPUT_STATE: current_state, next_q_values: all_q_values},
                 )
                 score = env.score
-            ratio.append(env.score - math.floor(env.potential))
+            delta.append(env.score - math.floor(env.potential))
 
             # Makes a backup for every percentage of progress.
-            if iteration % (N_GAMES / 10) == 0:
+            if iteration % (N_GAMES / 100) == 0:
                 saver.save(sess, "./deep_q_learning/model.ckpt")
-                print(sum(ratio)/len(ratio))
-                plt.plot(ratio)
+                print(sum(delta) / len(delta))
+                plt.plot(delta)
                 plt.show()
 
 

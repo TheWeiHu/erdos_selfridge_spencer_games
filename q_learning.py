@@ -189,7 +189,8 @@ def main():
     qtable = load_table()
     weights = load_weights()
 
-    # Keeps track of gameplay quality.
+    # Keeps track of gameplay quality compared to the best expected value against an
+    # optimal defender.
     delta = []
 
     print(qtable)
