@@ -291,7 +291,9 @@ Let $M$ not contain one of the pieces on level $i$. Since $v(S) >= \gamma >= v(i
 We now prove Theorem 4.5:
 
 \begin{proof}
-The idea behind the algorithm is that as we iterate through the board, starting with the more valuable pieces (according to $v_{*}$), which we are certain we can add to current\_set due to lemma 4.6. Every time we come across a piece whose value exceeds the remaining $\gamma$, we flag... 
+The idea behind the algorithm is that as we iterate through the board, starting with the more valuable pieces (according to $v_{*}$), which we are certain we can add to current\_set due to lemma 4.6. Every time we come across a piece whose value exceeds the remaining $\gamma$, we consider the value according to $v$ of the set formed by adding that piece to the current\_set. If that value is lesser than that of the best\_set we have encountered before, that set  becomes our new best\_set. \\
+
+"Notice, that lemma 4.6 guarantees one of the optimal sets can be formed with what has been added. Since, we have recursively considered every feasible set that comes after the decisions, one is bound to be optimal"  <- needs rewording!
 \end{proof}
 
 %----------------------------------------------------------------------------------------
@@ -308,7 +310,6 @@ One neural network to approximate value function, and another to select actions.
 Multiple continuous action space problem?
 
 %----------------------------------------------------------------------------------------
-\newpage
 \section{Observations}
 L. Moura: Train attacker for a predetermined number of turns (or time), and observe how well the trained defender performs relative to expected potential, and the "optimal" algorithm. A good metric is:
 \begin{equation*}
