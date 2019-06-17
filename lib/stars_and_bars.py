@@ -38,7 +38,7 @@ def stars_and_bars(bins, stars, allow_empty=True):
 
     # If there is only one bin, there is only one arrangement!
     if bins == 1:
-        yield stars
+        yield [stars]
         return
 
     # If empty bins are not allowed, distribute (star-bins) stars and add an extra star
@@ -46,7 +46,7 @@ def stars_and_bars(bins, stars, allow_empty=True):
     if not allow_empty:
         if stars == bins:
             # If same number of stars and bins, then there is only one arrangement!
-            yield tuple([1] * bins)
+            yield [1] * bins
             return
         stars -= bins
 
@@ -73,10 +73,10 @@ def stars_and_bars(bins, stars, allow_empty=True):
                     new_bars.append((new_bar, elem[1] + 1))
 
                 # Translate the stars and bars into a tuple.
-                yield tuple(
+                yield [
                     new_bar[y] - new_bar[y - 1] + (0 if allow_empty else 1)
                     for y in range(1, bins + 1)
-                )
+                ]
 
         bars = new_bars
 
@@ -84,6 +84,11 @@ def stars_and_bars(bins, stars, allow_empty=True):
 def main():
     """  Examines the order of arrangements yielded by the generator.
     """
+    total = 1  # The partitition with an empty set.
+    for i in range(1, 16):
+        total += len(list(stars_and_bars(4, i)))
+    print(total)
+
     print(list(stars_and_bars(4, 15)))
 
 

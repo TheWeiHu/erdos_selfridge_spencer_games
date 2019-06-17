@@ -135,8 +135,9 @@ def generate_position(levels=4, pieces=15):
     Returns:
         a random initial game position.
     """
+    pieces = math.ceil(random.random() * pieces)
     iterator = sab.stars_and_bars(levels, random.randint(1, pieces))
-    return list(sample_generator(iterator)[0])
+    return list(sample_generator(iterator))[0]
 
 
 def get_action(state, qtable, explore=0.05):
@@ -197,7 +198,7 @@ def main():
 
     for iteration in range(number_of_games):
         # Generates game with random starting position.
-        start_state = generate_position(4)
+        start_state = generate_position(1) + [0, 0, 0]
         env = game.Game(start_state, weights)
         score = 0
         while not env.is_finished():
