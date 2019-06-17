@@ -153,7 +153,11 @@ Two core ideas behind the algorithms  are laid out in the following lemmas:
 
 
 \begin{proof}
- Showing lemma 4.1 is equivalent to showing that for a fraction $p = \sfrac{1}{2^i}$ and a multiset $M$ of fractions which contains only elements of the form $\sfrac{1}{2^{i+j}}$ where $j>0$. If the elements in $M$ adds up to a value greater than $p$, then a subset of $M$ adds up to exactly $p$. To prove, we first create a new multiset $M'$, by dividing each element in $M$ by $p$. Notice the problem is equivalent to showing that a subset of $M'$ adds up to 1. Since, the sum of $M'$ must be greater than 1, and $M'$ contains only powers of $\sfrac{1}{2}$, lemma 1.X completes the proof.
+ Showing lemma 4.1 is equivalent to showing that for a fraction $p$ of the form $\sfrac{1}{2^i}$ where $i \in \mathbb{Z}^+$ and a multiset $M$ of fractions which contains only elements of the form $\sfrac{1}{2^{i+j}}$ where $j \in \mathbb{Z}^+$. If the elements in $M$ adds up to a value greater than $p$, then there exist a subset of $M$ which adds up to exactly $p$. \\
+ 
+We prove this result by first create a new multiset $M'$, by dividing each element in $M$ by $p$. Notice the problem is equivalent to showing that a subset of $M'$ adds up to 1. \\
+
+Since, the sum of $M'$ must be greater than 1, and $M'$ contains only powers of $\sfrac{1}{2}$, lemma 1.X (my proof of the splitting lemma) completes the proof.
 \end{proof}
 
 \begin{lem}
@@ -161,7 +165,9 @@ Two core ideas behind the algorithms  are laid out in the following lemmas:
 \end{lem}
 
 \begin{proof}
- If $A$ is greater than $B$ according $v*$, then we can continually apply lemma 4.1, and map each piece in $B$ to a subset of $A$, never reusing the same piece from $A$ more than once (and there will be pieces left over in $A$, not mapped to anything in $B$). In each of these mappings, each piece from the subset of $A$ will be valued according to $v*$ as being worth $\sfrac{1}{2^i}$ of the value of the piece in $B$, where $i$ is the number of levels the piece in $A$ is away from the piece in $B$. According to $v$, however, the same piece would be worth more than $\sfrac{1}{2^i}$ the value of the piece in $B$, since $v(i) < 2v(i+1)$ for a farsighted defender. Thus, the pieces in the set from $A$ will be valued less by $v$ than the piece in $B$. Applying this to every set in the mapping, we conclude $A$ will be valued higher than $B$ by $v$. We complete the proof by contraposition.
+ If $A$ is greater than $B$ according $v*$, then we can continually apply lemma 4.1, and map each piece in $B$ to a subset of $A$, without ever using the same piece from $A$ more than once (and there will be pieces left over in $A$, not mapped to anything in $B$). In each of these mappings, each piece from the subset of $A$ will be valued according to $v*$ as being worth $\sfrac{1}{2^i}$ of the value of the piece in $B$, where $i$ is the number of levels the piece in $A$ is away from the piece in $B$. \\
+ 
+According to $v$, however, the same piece would be worth more than $\sfrac{1}{2^i}$ the value of the piece in $B$, since $v(i) < 2v(i+1)$ for any farsighted defender. Thus, the pieces in the set from $A$ will be valued less by $v$ than the piece in $B$. Applying this to every set in the mapping, we conclude $A$ will be valued higher than $B$ by $v$. We complete the proof by contraposition.
 \end{proof}
 
 Similarly, we also have:
@@ -181,32 +187,46 @@ Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two set
 \begin{center}
   \begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
     \begin{algorithm}[H]
-      \KwIn{a board position $S$, and the value function of a farsighted defender $v$}  % Algorithm inputs
-      \KwResult{$(c, d)$, such that $a+b = c + d$} % Algorithm outputs/results
-      \medskip
-      \If{$\vert b\vert > \vert a\vert$}{
-        exchange $a$ and $b$ \;
-      }
-      $z \leftarrow c - a$ \;
-      $d \leftarrow b - z$ \;
-      {\bf return} $(c,d)$ \;
-      \caption{\texttt{Minimizing $v_{*}$ Value of Destroyed Set Against Farsighted Defenders}} % Algorithm name
+
+      \caption{\texttt{Minimizing $v_{*}$ Value of Destroyed Set Against Nearsighted Defenders}} % Algorithm name
       \label{alg:farsighted}   % optional label to refer to
+
+      \KwIn{a board position $S$ with $k$ levels, and the value function of a nearsighted defender $v$}  % Algorithm inputs
+      \KwResult{ a partition of the board $(S_{1}, S_{2})$ which guarantees the subset that the defender will destroy has the lowest possible value according to $v_{*}$} % Algorithm outputs/results
+  \medskip
+	Beginning from the row furthest from tenure, and going from left to right, we start by uniquely labeling each piece on the board with an integer starting at one.\\
+      \medskip
+      $\gamma \leftarrow \frac{v(S)}{2}$\;
+      $resulting\_set \leftarrow$ an array of zeroes of length $k$\;
+      $cumulative \leftarrow$ an array of tuples $(cd, level)$. \\ The tuple at the $i$-th index has for $cd$ the sum of the biased values of all the pieces up to and including the $i$-th piece, and $level$ is the level of that $i$-th piece\;
+      $current\_index \leftarrow cumulative.length - 1$\;
+      \medskip
+\While{$\gamma > 0$ and $current\_index > 0$} {
+		\If{$cumulative(current\_index - 1).cd < \gamma$} {
+			$best\_set[cumulative(current\_index - 1).level]{+}{+}$\;
+			$\gamma {-}{=} v(cumulative(current\_index - 1).level)$\;
+		}
+		$current\_index{-}{-}$\;
+      }
+    
+     \medskip
+      {\bf return} $(resulting\_set, (S - resulting\_set))$\;
     \end{algorithm}
   \end{minipage}
 \end{center}
 
 \begin{proof}
-
+Label each of the pieces with an integer in the same manner that is described in the algorithm. Essentially, the algorithm looks for the piece with the largest index which satisfies the condition that the sum of the biased values of the current piece and all the pieces that come after it is greater than $\gamma$. We can then be certain that the current piece must be contained in the set that we want the defender to destroy, by showing that there is no reason to include any elements with a smaller index. By contradiction, assume there is a subset with value less than 
 \end{proof}
 
-\newpage
 
 \subsection{Nearsighted Defenders}
 
 \begin{thm}
   The following algorithm maximizes the real value of the surviving pieces at the end of each turn against any nearsighted defender.
 \end{thm}
+
+
 
 \begin{center}
   \begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
@@ -220,10 +240,11 @@ Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two set
 
       \medskip
       $\gamma \leftarrow \frac{v(S)}{2}$\;
-      $best\_set \leftarrow S$ \;
-      $best\_value \leftarrow v_{*}(S)$ \;
-      $current\_set \leftarrow (0, 0, 0, ...)$ \;
-      $current\_value \leftarrow 0$ \;
+      $best\_set \leftarrow S$\;
+      $best\_value \leftarrow v_{*}(S)$\;
+      $current\_set \leftarrow $ an array of zeroes of length $k$\;
+      $current\_value \leftarrow 0$\;
+      \medskip
 
       \For{$i \leftarrow 0$ to $k$} {
         \For{$piece \leftarrow 0$ to $S[i]$} {
@@ -233,17 +254,18 @@ Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two set
         			 $current\_value {+}{=} v_{*}(i)$\;
       		}
       		\Else{
-      			$temp  \leftarrow current\_set$\;
-      			$temp[i]{+}{+}$\;
-      			\If{$current $}{
-        			 $best\_set \leftarrow temp$ \;
+      			\If{$current\_value + v_{*}(i) < best\_value $}{
+      				$best\_value \leftarrow current\_value + v_{*}(i)$\;
+        				 $best\_set \leftarrow current\_set$\;
+        				 $current\_set[i]{+}{+}$\;
+        				 
       		}
-      		$i{+}{+}$ \;
+      		$break$\;
       		}
         }
       }
-
-      {\bf return} $(best\_set, (P - best\_set))$ \;
+     \medskip
+      {\bf return} $(best\_set, (S - best\_set))$\;
     \end{algorithm}
   \end{minipage}
 \end{center}
@@ -263,22 +285,34 @@ The traditional Q-learning approach using a Q-table is only feasible for small t
 We propose a method for using a neural network to represent the Q table, using a method to compress the action space?
 
 \subsection{Policy Gradient}
+Take a series of actions, and determine feedback based on cumulative reward.
 \subsection{Actor Critic}
+One neural network to approximate value function, and another to select actions.
+Multiple continuous action space problem?
 
 %----------------------------------------------------------------------------------------
 
 \section{Observations}
-\section{Future Work}
-Find proof for actual optimal play. Is playing "greedily" every turn really the best approach?
+L. Moura: Train attacker for a predetermined number of turns (or time), and observe how well the trained defender performs relative to expected potential, and the "optimal" algorithm. A good metric is:
+\begin{equation*}
+\frac{optimal\_score - obtained\_score}{r_{*}(starting\_state)}
+\end{equation*}
+Metrics are gathered both during training, and after training. During training, track the training gain by measuring how much the q values are being changed (make the algorithm automatically increase the number of levels, once we have convergence), and track the progression of the previous metric. After training (without exploring), play a series of games and plot the potential, the obtained score, and the score obtained by the optimal algorithm. \\\
+
+Investigate relationship between $\gamma$ and the difference between potential score and optimal score? \\\
+
+\textbf{Is there anything else?}
+
+%\section{Future Work}
+%
+%\begin{enumerate}
+% \item Is playing "greedily" every turn really the best approach? Find proof for actual optimal play.
+% \item Introduce ESS Games, and mention how our variety cares about how many pieces get promoted rather than whether any piece gets promoted.
+%  \item Proofs about random defenders, splitting lemma etc (from previous type-up).
+%  \item Learn to make LaTeX bibliographies.
+%\end{enumerate}
 
 \end{document}
-
-%----------------------------------------------------------------------------------------
-% TO DO LIST
-
-% Introduce ESS Games, and mention how our variety cares about how many pieces get promoted rather than whether any piece gets promoted.
-% Proofs about random defenders, splitting lemma etc (from previous type-up)
-% Add bibliography.
 
 %----------------------------------------------------------------------------------------
 % TEMPLATE ELEMENTS
@@ -287,14 +321,7 @@ Find proof for actual optimal play. Is playing "greedily" every turn really the 
 % Numbered question, with subquestions in an enumerate environment
 %\begin{question}
 % Quisque ullamcorper placerat ipsum. Cras nibh. Morbi vel justo vitae lacus tincidunt ultrices. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
-%
-% % Subquestions numbered with letters
-% \begin{enumerate}[(a)]
-%   \item Do this.
-%   \item Do that.
-%   \item Do something else.
-% \end{enumerate}
-%\end{question}
+% \end{question}
 
 % Numbered question, with an optional title
 %\begin{question}[\itshape (with optional title)]
