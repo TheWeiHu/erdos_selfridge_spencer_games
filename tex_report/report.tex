@@ -216,7 +216,15 @@ Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two set
 \end{center}
 
 \begin{proof}
-Label each of the pieces with an integer in the same manner that is described in the algorithm. Essentially, the algorithm looks for the piece with the largest index which satisfies the condition that the sum of the biased values of the current piece and all the pieces that come after it is greater than $\gamma$. We can then be certain that the current piece must be contained in the set that we want the defender to destroy, by showing that there is no reason to include any elements with a smaller index. By contradiction, assume there is a subset with value less than 
+Label each of the pieces with an integer in the same manner that is described in the algorithm. Essentially, the algorithm looks for the piece with the largest index which satisfies the condition that the sum of the biased values of the current piece and all the pieces that come after it is greater than $\gamma$. \\
+
+We can then be certain that the current piece can be contained in the set that we want the defender to destroy, by showing that there is no reason to include any elements with a smaller index. By contradiction, assume there is some set $S$ that contains one or more element of smaller index and has minimal value according to $v_{*}$ and is greater than $\gamma$ according to $v$. \\
+
+We will show that we can replace those elements with index smaller than that of the current piece with elements with larger index than the current piece to form a set with equal or less value according to $v_{*}$ and equal or more value according to $v$. Let $T$ be a set containing the current element and all elements with larger index than the current element. Subtract $S \cup T$ from $S$, $T$ to form $S'$ and $T'$ respectively. Since we are claiming $S$ is optimal, then $v(S') <=  v(T')$. \\
+
+Consider, only a single element inside $S'$ which has index smaller than the current piece...
+
+
 \end{proof}
 
 
@@ -270,12 +278,21 @@ Label each of the pieces with an integer in the same manner that is described in
   \end{minipage}
 \end{center}
 
+Before we go about proving Theorem 4.5, we establish:
+
+\begin{lem}
+Let there be no pieces on the board which have greater value than $\gamma$ according to some nearsighted $v$. Let $i$ be the smallest $i$ such that the $i$-th level is not empty. To form a subset of $M$ with value of at least $\gamma$ according to $v$, while minimizing the value of the subset according to $v_{*}$, we are guaranteed to be able to include a piece from level $i$.
+\end{lem}
+
 \begin{proof}
-The idea behind the algorithm is that as we iterate through the board, starting with the more valuable pieces (according to $v_{*}$), we add to current\_set the pieces we are certain...
-
-
+Let $M$ not contain one of the pieces on level $i$. Since $v(S) >= \gamma >= v(i)$. Then we can apply lemma 4.3 and conclude $v_{*}(S) > v_{*}(i)$. Then, by lemma 4.1, we know there is a subset $M'$ of $M$ with a value of exactly $v_{*}(i)$. If we were to replace $M'$ in $M$ with a piece from level $i$, we do not change the value according to $v_{*}$ but we increase or maintain the value according to $v$ (Modus Tollens of lemma 4.3). 
 \end{proof}
 
+We now prove Theorem 4.5:
+
+\begin{proof}
+The idea behind the algorithm is that as we iterate through the board, starting with the more valuable pieces (according to $v_{*}$), which we are certain we can add to current\_set due to lemma 4.6. Every time we come across a piece whose value exceeds the remaining $\gamma$, we flag... 
+\end{proof}
 
 %----------------------------------------------------------------------------------------
 \section{Machine Learning}
@@ -291,15 +308,15 @@ One neural network to approximate value function, and another to select actions.
 Multiple continuous action space problem?
 
 %----------------------------------------------------------------------------------------
-
+\newpage
 \section{Observations}
 L. Moura: Train attacker for a predetermined number of turns (or time), and observe how well the trained defender performs relative to expected potential, and the "optimal" algorithm. A good metric is:
 \begin{equation*}
 \frac{optimal\_score - obtained\_score}{r_{*}(starting\_state)}
 \end{equation*}
-Metrics are gathered both during training, and after training. During training, track the training gain by measuring how much the q values are being changed (make the algorithm automatically increase the number of levels, once we have convergence), and track the progression of the previous metric. After training (without exploring), play a series of games and plot the potential, the obtained score, and the score obtained by the optimal algorithm. \\\
+Metrics are gathered both during training, and after training. During training, track the training gain by measuring how much the q values are being changed (make the algorithm automatically increase the number of levels, once we have convergence), and track the progression of the previous metric. After training (without exploring), play a series of games and plot the potential, the obtained score, and the score obtained by the optimal algorithm. \\
 
-Investigate relationship between $\gamma$ and the difference between potential score and optimal score? \\\
+Investigate relationship between $\gamma$ and the difference between potential score and optimal score? \\
 
 \textbf{Is there anything else?}
 
