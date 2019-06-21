@@ -40,7 +40,7 @@ W2 = tf.Variable(tf.random_normal([N_HIDDEN_1, N_HIDDEN_2]))
 O = tf.Variable(tf.random_normal([N_HIDDEN_2, len(ACTION_SPACE)]))
 
 # Training parameters:
-N_GAMES = 1000000
+N_GAMES = 10000000
 # Note that having a large learning rate leads to large updates, which fills the
 # matrices with NAN.
 L_RATE = 1e-7
@@ -145,7 +145,6 @@ def main():
             # Makes a backup for every percentage of progress.
             if iteration % (N_GAMES / 100) == 0:
                 saver.save(sess, "./deep_q_learning/model.ckpt")
-                print(DELTA)
                 print(sum(DELTA) / len(DELTA))
                 # plt.plot(DELTA)
                 # plt.show()
