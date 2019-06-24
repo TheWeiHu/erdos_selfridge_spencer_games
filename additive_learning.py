@@ -160,7 +160,7 @@ def main():
             DELTA.append(env.score - math.floor(env.potential))
 
             # Makes a backup for every percentage of progress.
-            if iteration % (N_GAMES / 100000) == 999:
+            if iteration % (N_GAMES / 10000) == 999:
                 saver.save(sess, "./additive_learning/model.ckpt")
                 # print(DELTA)
                 print(sum(DELTA[-999:]) / 999)
