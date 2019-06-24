@@ -31,8 +31,8 @@ for i in range(1, N_PIECES + 1):
     ACTION_SPACE += list(sab.stars_and_bars(N_LEVELS, i))
 
 # Neural network parameters:
-N_HIDDEN_1 = 256
-N_HIDDEN_2 = 256
+N_HIDDEN_1 = 50
+N_HIDDEN_2 = 50
 
 # Initializes weights of neural network:
 W1 = tf.Variable(tf.random_normal([N_LEVELS, N_HIDDEN_1]))

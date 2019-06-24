@@ -90,9 +90,9 @@ def main():
     # Starts training.
     with tf.Session() as sess:
 
-        # saver.restore(sess, "./additive_learning/model.ckpt")
+        saver.restore(sess, "./additive_learning/model.ckpt")
         # Runs the initializer.
-        sess.run(tf.global_variables_initializer())
+        # sess.run(tf.global_variables_initializer())
 
         for iteration in range(N_GAMES):
             # Generates game with random starting position.
@@ -108,16 +108,15 @@ def main():
                     action, all_q_values = sess.run(
                         [predicted, q_values], feed_dict={INPUT_STATE: current_state}
                     )
+                    print(all_q_values)
                     # print(all_q_values)
                     if action[0] == N_LEVELS or current_state[action[0]] <= 0:
                         break
-                    # Should epsilon greedy be done forthe action as a whole instead?
+                    # Should epsilon greedy be done for the action as a whole instead?
                     if random.random() > EPSILON:
                         # Currently, most of the randomly chosen actions will be bad;
                         # perhaps, we should look into only selecting a valid action.
                         action = [random.randint(0, N_LEVELS - 1)]
-                    # Perhaps, we should stop the algorithm the moment an invalid piece
-                    # is selected.
                     current_state[action[0]] -= 1
                     current_state[N_LEVELS + action[0]] += 1
                     # Gets the predicted q values of the next state.
