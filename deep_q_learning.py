@@ -43,7 +43,7 @@ O = tf.Variable(tf.random_normal([N_HIDDEN_2, len(ACTION_SPACE)]))
 N_GAMES = 10000000
 # Note that having a large learning rate leads to large updates, which fills the
 # matrices with NAN.
-L_RATE = 1e-7
+L_RATE = 0.0001
 DISCOUNT = 0.95
 EPSILON = 0.99
 # Load in the weight of a defender:
@@ -117,6 +117,8 @@ def main():
                 subset = ACTION_SPACE[action[0]]
 
                 if random.random() > EPSILON:
+                    # Currently, most of the randomly chosen actions will be bad;
+                    # perhaps, we should look into only selecting a valid action.
                     subset = random.choice(ACTION_SPACE)
 
                 # If the move generated is invalid, refuse to partition.

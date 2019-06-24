@@ -88,7 +88,6 @@ def main():
     for i in range(1, 16):
         total += len(list(stars_and_bars(4, i)))
     print(total)
-
     print(list(stars_and_bars(4, 15)))
 
 
