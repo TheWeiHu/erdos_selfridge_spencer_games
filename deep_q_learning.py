@@ -43,8 +43,7 @@ O = tf.Variable(tf.random_normal([N_HIDDEN_2, len(ACTION_SPACE)]))
 N_GAMES = 10000000
 # Note that having a large learning rate leads to large updates, which fills the
 # matrices with NAN.
-L_RATE = 0.0001
-DISCOUNT = 0.95
+L_RATE = 0.00001
 EPSILON = 0.99
 # Load in the weight of a defender:
 D_WEIGHTS = q.load_weights("deep_q_learning/weights")
@@ -132,9 +131,7 @@ def main():
                 # Gets the predicted q values of the next state.
                 next_values = sess.run(q_values, feed_dict={INPUT_STATE: env.position})
                 # print(action)
-                all_q_values[0, action[0]] = (env.score - score) + DISCOUNT * np.max(
-                    next_values
-                )
+                all_q_values[0, action[0]] = (env.score - score) + np.max(next_values)
 
                 # Applies gradient descent and update network.
                 sess.run(

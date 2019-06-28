@@ -24,8 +24,8 @@ N_PIECES = 15
 N_LEVELS = 4
 
 # Neural network parameters:
-N_HIDDEN_1 = 256
-N_HIDDEN_2 = 256
+N_HIDDEN_1 = 64
+N_HIDDEN_2 = 64
 
 # Initializes weights of neural network:
 W1 = tf.Variable(tf.random_normal([N_LEVELS * 2, N_HIDDEN_1]))
@@ -33,11 +33,10 @@ W2 = tf.Variable(tf.random_normal([N_HIDDEN_1, N_HIDDEN_2]))
 O = tf.Variable(tf.random_normal([N_HIDDEN_2, N_LEVELS + 1]))
 
 # Training parameters:
-N_GAMES = 10000000
+N_GAMES = 100000
 # Note that having a large learning rate leads to large updates, which fills the
 # matrices with NAN.
-L_RATE = 0.00000001
-DISCOUNT = 0.95
+L_RATE = 0.000000001
 EPSILON = 0.95
 # Load in the weight of a defender:
 D_WEIGHTS = q.load_weights("additive_learning/weights")
@@ -90,9 +89,9 @@ def main():
     # Starts training.
     with tf.Session() as sess:
 
-        saver.restore(sess, "./additive_learning/model.ckpt")
+        # saver.restore(sess, "./additive_learning/model.ckpt")
         # Runs the initializer.
-        # sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer())
 
         for iteration in range(N_GAMES):
             # Generates game with random starting position.
@@ -108,7 +107,6 @@ def main():
                     action, all_q_values = sess.run(
                         [predicted, q_values], feed_dict={INPUT_STATE: current_state}
                     )
-                    print(all_q_values)
                     # print(all_q_values)
                     if action[0] == N_LEVELS or current_state[action[0]] <= 0:
                         break
@@ -124,7 +122,7 @@ def main():
                         q_values, feed_dict={INPUT_STATE: current_state}
                     )
                     # print(action)
-                    all_q_values[0, action[0]] = DISCOUNT * np.max(next_values)
+                    all_q_values[0, action[0]] = np.max(next_values)
                     # Applies gradient descent and update network.
                     sess.run(
                         [update, W1, W2, O],
@@ -148,21 +146,21 @@ def main():
                 next_values = sess.run(
                     q_values, feed_dict={INPUT_STATE: env.position + [0] * N_LEVELS}
                 )
-                all_q_values[0, action[0]] = (env.score - score) + DISCOUNT * np.max(
-                    next_values
-                )
+                all_q_values[0, action[0]] = (env.score - score) + np.max(next_values)
                 # Applies gradient descent and update network.
                 sess.run(
                     [update, W1, W2, O],
                     feed_dict={INPUT_STATE: current_state, next_q_values: all_q_values},
                 )
                 score = env.score
+                # print(all_q_values)
             DELTA.append(env.score - math.floor(env.potential))
 
             # Makes a backup for every percentage of progress.
-            if iteration % (N_GAMES / 10000) == 999:
+            if iteration % 1000 == 999:
                 saver.save(sess, "./additive_learning/model.ckpt")
                 # print(DELTA)
+                print(all_q_values)
                 print(sum(DELTA[-999:]) / 999)
                 # plt.plot(DELTA)
                 # plt.show()

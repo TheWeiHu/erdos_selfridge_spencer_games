@@ -185,8 +185,7 @@ def main():
     # initialize_weights()
 
     # Training parameters
-    number_of_games = 1000000
-    discount = 0.95
+    number_of_games = 100000000
     qtable = load_table()
     weights = load_weights()
 
@@ -209,7 +208,7 @@ def main():
             env.play(*output_action(current_state, action))
             new_score = env.score
             # Calculates new q value.
-            new_q = (new_score - score) + discount * max(qtable[tuple(env.position)])
+            new_q = (new_score - score) + max(qtable[tuple(env.position)])
             # Updates table with new q value.
             row = qtable[tuple(current_state)]
             row[action] = new_q
