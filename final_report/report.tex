@@ -1,0 +1,371 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Authors:
+% Wei Hu (whu061@uottawa.ca)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\documentclass{article}
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+\usepackage{setspace}
+\doublespacing
+
+% Theorems Format
+\usepackage{amsthm}
+% Fractions Format
+\usepackage{xfrac}
+% Floor Function
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem*{cor}{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{conj}{Conjecture}[section]
+\newtheorem{exmp}{Example}[section]
+
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+\newtheorem*{note}{Note}
+
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{argmax} 
+\DeclareMathOperator*{\argmin}{argmin} 
+
+
+\title{\underline{CSI 4900}: Honours Project Final Report}
+\author{Wei Hu\\ \texttt{whu061@uottawa.ca}}
+\date{University of Ottawa --- \today} 
+
+\begin{document}
+
+\maketitle % Print the title
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The Beginning!
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Introduction} 
+
+An Erd\"os-Selfridge-Spencer (ESS) game consists of an attacker $A$, a defender $D$, and a game state represented with an array $S$ of size $k$, where $S[i] \ge 0$ is the number of pieces on the board that is $i$ levels away from the top of the board. 
+
+At the beginning of each turn, the attacker partition $S$ into two arrays $S_1$ and $S_2$ such that for all $0 \le i < k$, we have $S[i] = S_1[i] + S_2[i]$, with $S_1[i] \ge 0$ and $S_2[i] \ge 0$.
+
+\begin{defn}
+	Let $v$ be a value function, which maps a level $i$ to a real number representing the value of a piece at level $i$. A value function can be represented by an array $(w_{0}, w_{1}, w_{2}, ... , w_{k})$ where:
+	\begin{equation*}
+		v(i) = w_{i}.
+	\end{equation*}
+\end{defn}
+
+\begin{defn}
+	Let $S$ be board state with $k$ levels. The value function applied to $S$ is defined as:
+	\begin{equation*}
+		v(S) = \sum_{i = 0}^k S[i]v(i).
+	\end{equation*}
+\end{defn}
+
+A defender would apply its value function to the each of $S_1$, $S_2$. It would then destroy the set deemed more valuable by the value function. The pieces in position $0$ of the surviving set is said to have gained \textit{tenure} and are removed from the board. We then left shift the surviving array and set $S$ equal to it. 
+
+The game ends when S is an empty array (note the game ends in at most $k$ turns).
+The $score$ is defined to be the total number of pieces that have gained tenure when the game ends.
+
+Note: the board is zero-indexed. Thus, a piece on level $0$ will get tenure and yield a point for the attacker (unless it is destroyed by the defender this turn). 
+
+\begin{thm}
+	The optimal value function $v_{*}$ for the defender , which minimizes the score, is defined as:
+	% Math equation/formula
+	\begin{equation}
+		v_{*}(i) = \frac{1}{2^{i+1}}.
+	\end{equation}
+\end{thm}
+
+The proof is found in \cite{original}. The proof relies on what we call the \textit{splitting lemma}, which we will prove in the next section.
+
+\begin{lem}
+	Given a finite multiset $S$ consisting strictly of powers of $\frac{1}{n}$, for some $n \in Z^*$, let $s = \sum_{e \in S} e$. If $s \ge 1$, then $\exists S' \subset S$ such that $ \sum_{e \in S'} e  = 1$.
+\end{lem}
+
+The original ESS game declares the attacker the winner if $score > 0$ at the end of the game. We define a ``score-keeping" version of the game where:
+\begin{itemize}
+	\item the attacker wins if $score > v_*(initial\_state)$
+	\item the defender wins if $score < v_*(initial\_state)$
+	\item we declare a draw if $score = v_*(initial\_state)$
+\end{itemize}
+
+\subsection{Biased Defenders} 
+
+We observe the optimal value function satisfies $v(i) = 2v(i+1)$. By deviating from this equality, we can create sub-optimal defenders. These defenders either overvalue pieces that are close to the top of the board, or those that are far away. This bias is dependent on the direction of the inequality.
+
+\begin{defn}
+	A farsighted defender is a one whose value function satisfies:
+	\begin{equation}
+		v(i) < 2v(i+1).
+	\end{equation}
+	for all $0 \le i < k$, where $k$ is the length of the board.
+\end{defn}
+
+\begin{defn}
+	A nearsighted (myopic) defender is a one whose value function satisfies:
+	\begin{equation}
+		v(i) > 2v(i+1).
+	\end{equation}
+	for all $0 \le i < k$, where $k$ is the length of the board.
+\end{defn}
+
+Intuitively, we can think of a farsighted defender as one which overvalues pieces that are close to the bottom of the board, while a nearsighted one would overvalue pieces that are near to the top of the board.
+
+\subsection{Challenges}
+In the original paper \cite{original}, the focus was on training defenders. Defenders have an action space of size two; attackers, however, have an $O(2^n)$ action space.
+
+Although the paper presents a method for training attackers, it forces the attacker's action space to be made linear. This reduction increases the proportion of optimal moves in the search space (making the game easier for the attacker). Furthermore, it is only guaranteed that the reduced space contains the optimal move for the optimal defender (and we have shown the optimal move for the optimal defender is not always optimal for a suboptimal defender).
+
+Since we only get feedback whenever a piece gets tenure, rewards are sparse. Most of the attacker's actions are bad and lead to no reward, thus it is difficult to get good training feedback.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The Proofs!
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Proof of Theorems}
+
+Lemma 2.1 and 2.2 can be used to give alternate proof of the splitting lemma (of which \cite{original} makes use for proving theorem 1.1). Furthermore, these lemmas will be the foundation in our proof of the optimal strategy for playing biased defenders.
+
+\begin{lem}
+	Given a finite multiset $S$ consisting strictly of powers of $\frac{1}{n}$, for some $n \in Z^+$. If $ \sum_{e \in S} e \ge 1$, then $\exists S' \subset S$ such that $ \sum_{e \in S'} e  = 1$.
+\end{lem}
+
+\begin{proof}
+	We define the concept of a \textit{promotion}. If there exists $A \subset S$ satisfying $|A| > 1$ and $\sum_{e \in A} e = (\frac{1}{n})^k$ for some $k \in Z^*$. Then we would consider $T = (S-A) \cup {(\frac{1}{n})^k}$ to be a promotion of $S$. We would call $S$ the \textit{parent} of $T$. We note $\sum_{i \in T} i = \sum_{j \in S} j$. 
+	
+	Furthermore, $\forall B \subset T, \exists C \subset S$ such that $\sum_{i \in B} i = \sum_{j \in C} j$. (Every element in $T$ that is not $(\frac{1}{n})^k$ has greater or equal multiplicity in $S$ than in $T$. Thus, unless $B$ contains all copies of $(\frac{1}{n})^k$ in $T$, we are able to choose $C \subset S$ made up of the same elements. Suppose $B$ contains all copies of $(\frac{1}{n})^k$ in $T$, then we would use $A \subset S$ to account for one copy of $(\frac{1}{n})^k$. For the remaining elements in $B$, there will be a corresponding copy in $S$.) 
+	
+	
+	Every promotion has fewer elements than its parent. Let $S >_p S_1 >_p S_2 >_p ... >_p S_n$ denote a chain of promotions with $S_n$ having no further promotions. Since $S$ is finite, the length of the chain is finite. We observe that $\forall k \ge 1$, the multiplicity of $\frac{1}{n}^k$ in $S_n$ is less than or equal to $n-1$ (If it were $n$ or greater, then we have a promotion by letting $A$ equal $n$ copies of $\frac{1}{n}^k$). Thus, the sum of those elements is strictly upper bounded by $\sum_{i=1}^\infty \frac{n-1}{n^i} = (n-1) \sum_{i=1}^\infty \frac{1}{n^i} = 1$. Yet we have $s = \sum_{e \in S} e =  \sum_{e \in S_n} e \ge 1$, thus there must be at least one element in $S_n$ in the form $\frac{1}{n}^k$ where $k = 0$, that is to say $1 \in S_n$. 
+	
+	Thus, there is a subset of $S_n$ that adds to $1$; per our previous observation, we conclude there must also be a subset of $S$ which adds to $1$
+\end{proof}
+
+\begin{cor}
+	Given a finite multiset $S$ consisting strictly of elements in the form $(\frac{1}{n})^r$, for some $n \in Z^+, r \ge k$. We have $\forall  s \le k$, if $\sum_{e \in S} e \ge {\frac{1}{n}}^s$, then $\exists S' \subset S$ such that $ \sum_{e \in S'} e  = {\frac{1}{n}}^s$.
+\end{cor}
+
+The \textit{splitting lemma} is the special case where $n=2$ and $k=1$. 
+
+
+\begin{lem}
+	Let $S$ be a board state containing only pieces on levels greater than $i$. Suppose $v_{*}(S) \ge v_{*}(i)$, then $\exists S^{'} \subset S$ such that $v_{*}(S') = v_{*}(i)$.
+\end{lem}
+
+
+\begin{proof}
+	Note, we have $v_{*}(S) = \sum_{j = i + 1}^k S[j]\frac{1}{2^{j+1}}\ge v_*(i) = \frac{1}{2^{i+1}}$. From there, dividing $\frac{1}{2^{i+1}}$ from both sides we get: $\sum_{j = i + 1}^k S[j]\frac{1}{2^{j-i}} \ge 1$.
+	
+	Create a multiset $M$ by including $S[j]$ copies of $\frac{1}{2^{j-i}}$ for each $i + 1 \le j < k$. We can apply lemma 2.1 to $M$ and conclude there is subset $M'$ of $M$ which adds to $1$. 
+	
+	Based on how $M$ is defined, we know every element $e$ in $M$ corresponds to a piece on the $v_{*}^{-1}(e\frac{1}{2^{i+1}})$ level of $S$. We can form a bijection between $M$ and $S$
+	
+	Thus, we know there being a subset $S'$ of $S$ corresponding to $M^{'}$ satisfying:
+	
+	$v_{*}(S') = \sum_{e \in M^{'}} e \frac{1}{2^{i+1}} = \frac{1}{2^{i+1}}\sum_{e \in M^{'}} e =   \frac{1}{2^{i+1}} = v_{*}(i)$.
+\end{proof}
+
+\begin{thm}
+	When playing against an optimal defender, the optimal approach for the attacker is to make the value according to $v_{*}$ of the two partitioned sets as close as possible.
+\end{thm}
+
+\begin{proof}
+	We sketch a proof:
+	
+	We can show by modifying the proof from \cite{original} that when playing against an optimal defender, the best score that can be achieved from a starting state $S$ is $\floor{v_{*}(S)}$.
+	
+	We know the max value of any piece according to $v_*$ is $\frac{1}{2}$. By repeatedly applying the corollary of lemma 2.1, we can partition $S$ into $2 \floor{v_{*}(S)}$ subsets each with value of at least $\frac{1}{2}$ according to $v^*$. 
+	
+	By evenly distributing those subsets, we can partition $S$ into $2$ subsets each with with value of at least $\frac{1}{2}\floor{v_{*}(S)}$ according to $v^*$.
+	
+	We can guarantee the value of the surviving subset is greater than or equal to $\frac{1}{2}\floor{v_{*}(S)}$. After the left shift, the value of the surviving set according to $v^*$ is doubled and the tenured pieces are removed from the board. Thus, at every step we have $\Delta score = \Delta v^*(S)$.
+	
+	We notice the following invariant $current\_score + v_{*}(current\_state) = \floor{v_{*}(start\_state)}$.
+	
+	In at most $k$ steps we will have, $v_{*}(current\_state) = 0$. We thus have $current\_score = \floor{v_{*}(start\_state)}$, which means we achieve the best possible score.
+	
+	We complete the proof by noting that when we make the value according to $v_{*}$ of the two partitioned sets as close as possible, we will achieve the necessary condition which is to produce two sets each with value of at least $\frac{1}{2}\floor{v_{*}(S)}$ according to $v^*$.
+\end{proof}
+
+\subsection{Farsighted Defenders}
+
+\begin{lem}
+	Let $A$, $B$ be two states, and let $v$ be the value function of a farsighted defender. If $\argmax_x \{B[x] > 0\} < \argmin_x \{A[x] > 0\}$ and $v(B) > v(A)$ then $v_*(B) > v_*(A)$
+\end{lem}
+
+\begin{proof}
+	By contradiction, $v*(A) \ge v*(B)$. We can apply lemma 2.2 and map each piece in $B$ to a subset of $A$ with equal value. 
+	
+	Note, we are able to make those subsets of $A$ disjoint. Every time we make a mapping we can ``remove from consideration" the pieces used in this mapping to produce an $A'$ and $B'$ satisfying $v*(A') \ge v*(B')$ to which we can reapply lemma 2.2.
+	
+	This process is repeated until every piece in $B$ is mapped. While $v_*$ deems the pieces on both sides of the mapping to be equal, $v$ will not.
+	
+	WLOG, suppose a piece at level $i$ in $B$ is mapped to $M \subset A$. 
+    Consider any piece in $M$ and suppose it is on level $j$, we note: $\frac{v(j)}{v(i)} > \frac{v*(j)}{v*(i)}$, since $v(i) < 2v(i+1)$ for any farsighted defender.
+    
+    Thus, we have $\frac{v(M)}{v(i)} > \frac{v*(M)}{v*(i)} = 1$. We've mapped every piece in $B$ to a disjoint subset of $A$ that is considered more valuable by $v$. It must be that $v(A) > v(B)$.
+\end{proof}
+
+\begin{thm}
+	The following algorithm maximizes the real value of the surviving pieces at the end of each turn against any farsighted defender.
+\end{thm}
+
+\begin{center}
+	\begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
+		\begin{algorithm}[H]
+			
+			\caption{\texttt{Minimizing $v_{*}$ Value of Destroyed Set Against Nearsighted Defenders}} % Algorithm name
+			\label{alg:farsighted}   % optional label to refer to
+			
+			\KwIn{a board position $S$ with $k$ levels, and the value function of a nearsighted defender $v$}  % Algorithm inputs
+			\KwResult{ a partition of the board $(S_{1}, S_{2})$ which guarantees the subset that the defender will destroy has the lowest possible value according to $v_{*}$} % Algorithm outputs/results
+			\medskip
+			Beginning from the row furthest from tenure, and going from left to right, we start by uniquely labeling each piece on the board with an integer starting at one.\\
+			\medskip
+			$\gamma \leftarrow \frac{v(S)}{2}$\;
+			$resulting\_set \leftarrow$ an array of zeroes of length $k$\;
+			$cumulative \leftarrow$ an array of tuples $(cd, level)$. \\ The tuple at the $i$-th index has for $cd$ the sum of the biased values of all the pieces up to and including the $i$-th piece, and $level$ is the level of that $i$-th piece\;
+			$current\_index \leftarrow cumulative.length - 1$\;
+			\medskip
+			\While{$\gamma > 0$ and $current\_index > 0$} {
+				\If{$cumulative(current\_index - 1).cd < \gamma$} {
+					$best\_set[cumulative(current\_index - 1).level]{+}{+}$\;
+					$\gamma {-}{=} v(cumulative(current\_index - 1).level)$\;
+				}
+				$current\_index{-}{-}$\;
+			}
+			    
+			\medskip
+			{\bf return} $(resulting\_set, (S - resulting\_set))$\;
+		\end{algorithm}
+	\end{minipage}
+\end{center}
+
+\begin{proof}
+	Label each of the pieces with an integer in the same manner that is described in the algorithm. Essentially, the algorithm looks for the piece with the largest index which satisfies the condition that the sum of the biased values of the current piece and all the pieces that come after it is greater than $\gamma$. 
+	
+	We can then be certain that the current piece can be contained in the set that we want the defender to destroy, by showing that there is no reason to include any elements with a smaller index. By contradiction, assume there is some set $S$ that contains one or more element of smaller index and has minimal value according to $v_{*}$ and is greater than $\gamma$ according to $v$. 
+	
+	We will show that we can replace those elements with index smaller than that of the current piece with elements with larger index than the current piece to form a set with equal or less value according to $v_{*}$ and equal or more value according to $v$. Let $T$ be a set containing the current element and all elements with larger index than the current element. Subtract $S \cup T$ from $S$, $T$ to form $S'$ and $T'$ respectively. Since we are claiming $S$ is optimal, then $v(S') \le  v(T')$.
+	
+	Consider, only a single element inside $S'$ which has index smaller than the current piece...
+\end{proof}
+
+\newpage
+
+\subsection{Nearsighted Defenders}
+
+\begin{lem}
+	Let $v$ be the value function of a nearsighted defender. Let $A$, $B$ be two sets of pieces. If every piece in $B$ is further from tenure than any piece in $A$, and $B$ has greater value according to $v$, then $B$ has greater value according to $v_{*}$ as well.
+\end{lem}
+
+\begin{thm}
+	The following algorithm maximizes the real value of the surviving pieces at the end of each turn against any nearsighted defender.
+\end{thm}
+
+\begin{center}
+	\begin{minipage}{1\linewidth} % Adjust the minipage width to accomodate for the length of algorithm lines
+		\begin{algorithm}[H]
+			
+			\caption{\texttt{Minimizing $v_{*}$ Value of Destroyed Set Against Nearsighted Defenders}} % Algorithm name
+			\label{alg:nearsighted}   % optional label to refer to
+			
+			\KwIn{a board position $S$ with $k$ levels, and the value function of a nearsighted defender $v$}  % Algorithm inputs
+			\KwResult{ a partition of the board $(S_{1}, S_{2})$ which guarantees the subset that the defender will destroy has the lowest possible value according to $v_{*}$} % Algorithm outputs/results
+			
+			\medskip
+			$\gamma \leftarrow \frac{v(S)}{2}$\;
+			$best\_set \leftarrow S$\;
+			$best\_value \leftarrow v_{*}(S)$\;
+			$current\_set \leftarrow $ an array of zeroes of length $k$\;
+			$current\_value \leftarrow 0$\;
+			\medskip
+			
+			\For{$i \leftarrow 0$ to $k$} {
+				\For{$piece \leftarrow 0$ to $S[i]$} {
+					\If{$v(i) < \gamma$}{
+						$current\_set[i]{+}{+}$\;
+						$\gamma {-}{=} v(i)$\;
+						$current\_value {+}{=} v_{*}(i)$\;
+					}
+					\Else{
+						\If{$current\_value + v_{*}(i) < best\_value $}{
+							$best\_value \leftarrow current\_value + v_{*}(i)$\;
+							$best\_set \leftarrow current\_set$\;
+							$current\_set[i]{+}{+}$\;
+							        				 
+						}
+						$break$\;
+					}
+				}
+			}
+			\medskip
+			{\bf return} $(best\_set, (S - best\_set))$\;
+		\end{algorithm}
+	\end{minipage}
+\end{center}
+
+Before proving Theorem 4.5, we establish:
+
+\begin{lem}
+	Let there be no pieces on the board which have greater value than $\gamma$ according to some nearsighted $v$. Let $i$ be the smallest $i$ such that the $i$-th level is not empty. To form a subset of $M$ with value of at least $\gamma$ according to $v$, while minimizing the value of the subset according to $v_{*}$, we are guaranteed to be able to include a piece from level $i$.
+\end{lem}
+
+\begin{proof}
+	Let $M$ not contain one of the pieces on level $i$. Since $v(S) \ge \gamma \ge v(i)$. Then we can apply lemma 4.3 and conclude $v_{*}(S) > v_{*}(i)$. Then, by lemma 4.1, we know there is a subset $M'$ of $M$ with a value of exactly $v_{*}(i)$. If we were to replace $M'$ in $M$ with a piece from level $i$, we do not change the value according to $v_{*}$ but we increase or maintain the value according to $v$ (Modus Tollens of lemma 4.3). 
+\end{proof}
+
+We now prove Theorem 4.5:
+
+\begin{proof}
+	The idea behind the algorithm is that as we iterate through the board, starting with the more valuable pieces (according to $v_{*}$), which we are certain we can add to current\_set due to lemma 4.6. Every time we come across a piece whose value exceeds the remaining $\gamma$, we consider the value according to $v$ of the set formed by adding that piece to the current\_set. If that value is lesser than that of the best\_set we have encountered before, that set  becomes our new best\_set. \\
+	
+	"Notice, that lemma 4.6 guarantees one of the optimal sets can be formed with what has been added. Since, we have recursively considered every feasible set that comes after the decisions, one is bound to be optimal"  <- needs rewording!
+\end{proof}
+
+\section{Machine Learning}
+
+\subsection{Implementation}
+
+\begin{itemize}
+	\item Ben should investigate and do a write-up on the microaction approach (by going through the code and understanding the implementation details and the ``tricks'' that allow the technique to work) and discuss how it addresses the challenges in the previous subsection.
+	          
+	\item Ben should tune the trained model, and use 2D convolution as Prof. Mao mentioned.
+\end{itemize}
+
+
+\subsection{Analysis}
+\begin{itemize}
+	\item Ben should benchmark the model as Prof. Moura mentioned.
+	\item Wei should look into proving convergence as Prof. Mao mentioned.
+\end{itemize}
+
+
+\section{Conclusion}
+
+\section{Bibliography}
+
+
+\bibitem{original} 
+Raghu, Maithra, et al. "Can deep reinforcement learning solve erdos-selfridge-spencer games?." \textit{International Conference on Machine Learning}. 2018.
+
+
+\end{document}
