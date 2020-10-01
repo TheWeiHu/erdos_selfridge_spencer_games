@@ -31,9 +31,9 @@ class TrainRoutine:
             episode_step += 1
             probabilistic = episode_step < Config.probabilisticThreshold
             pi = self.mcts.get_action_prob(game, probabilistic)
-            
+
             train_examples.append([game.board, pi])
-            
+
             if max(pi) > pi[0] + 0.05:
                 new_pi = [0] * len(pi)
                 new_pi[0] = 1
@@ -81,7 +81,9 @@ class TrainRoutine:
 
             # training new network, keeping a copy of the old one
             self.network.save_checkpoint(Config.checkpoint, "temp.pth.tar")
-            self.previous_network.load_checkpoint(Config.checkpoint, "temp.pth.tar")
+            self.previous_network.load_checkpoint(
+                Config.checkpoint, "temp.pth.tar"
+            )
             pmcts = MCTS(self.previous_network)
 
             self.network.train(train_examples)
@@ -106,7 +108,7 @@ class TrainRoutine:
                     Config.checkpoint, f"checkpoint_{i}.pth.tar"
                 )
                 self.network.save_checkpoint(Config.checkpoint, "best.pth.tar")
-        
+
         print(f"num of versions: {version}")
 
     def save_train_examples(self, i):

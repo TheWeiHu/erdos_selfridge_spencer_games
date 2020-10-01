@@ -43,23 +43,27 @@ class CNN:
         self.model.load_weights(filepath)
 
 
-def model_fn(dimension):
+def model_fn(dimension, dense=True):
     # Adds an extra dimension for to use convolutional layers.
     inputs = Input(shape=(dimension,))
     current = Reshape((dimension, 1))(inputs)
 
-    # Builds the inner convolution layers.
-    for _ in range(3):
-        current = Conv1D(
-            filters=128,
-            kernel_size=3,
-            kernel_initializer="Orthogonal",
-            padding="same",
-            kernel_regularizer=l2(0.01),
-        )(current)
-        current = Activation("relu")(
-            BatchNormalization(axis=2, epsilon=0.0001)(current)
-        )
+    if dense:
+        for _ in range(2):
+            current = Dense(64, activation='relu')(current)
+    else: 
+        # Builds the inner convolution layers.
+        for _ in range(3):
+            current = Conv1D(
+                filters=128,
+                kernel_size=3,
+                kernel_initializer="Orthogonal",
+                padding="same",
+                kernel_regularizer=l2(0.01),
+            )(current)
+            current = Activation("relu")(
+                BatchNormalization(axis=2, epsilon=0.0001)(current)
+            )
 
     # Handles the extracted three dimensional features.
     current = Flatten()(current)
