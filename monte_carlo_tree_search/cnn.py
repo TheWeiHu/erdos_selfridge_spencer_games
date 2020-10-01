@@ -72,17 +72,17 @@ def model_fn(dimension, dense=True):
             current = Activation("relu")(
                 BatchNormalization(axis=2, epsilon=0.0001)(current)
             )
-            current = Flatten()(current)
+        current = Flatten()(current)
 
-            # Handles the extracted three dimensional features.
-            for _ in range(2):
-                current = Dropout(0.3)(
-                    Activation("relu")(
-                        BatchNormalization(axis=1, epsilon=0.0001)(
-                            Dense(512, kernel_regularizer=l2(0.01))(current)
-                        )
+        # Handles the extracted three dimensional features.
+        for _ in range(2):
+            current = Dropout(0.3)(
+                Activation("relu")(
+                    BatchNormalization(axis=1, epsilon=0.0001)(
+                        Dense(512, kernel_regularizer=l2(0.01))(current)
                     )
                 )
+            )
 
     # Extracts outputs.
     policy = Dense(dimension // 2 + 1, activation="softmax", name="policy")(current)
