@@ -6,6 +6,6 @@ class Config:
     updateThreshold = 0.55  # model replacement win threshold
     maxlenOfQueue = 2000  # num game examples to train network
     numMCTSSims = 200  # num moves for MCTS to simulate
-    gymCompare = 10  # num games between old and new model
+    gymCompare = 12  # num games between old and new model
     cpuct = 1
     checkpoint = "./temp/"

@@ -6,6 +6,7 @@ from keras.layers import *
 from keras.models import *
 from keras.optimizers import *
 from keras.regularizers import *
+from keras.utils import *
 
 # TODO: further tune hyperparameters
 
@@ -49,9 +50,16 @@ def model_fn(dimension, dense=True):
     current = Reshape((dimension, 1))(inputs)
 
     if dense:
-        for _ in range(2):
-            current = Dense(64, activation='relu')(current)
-    else: 
+        current = Dropout(0.3)(
+            Activation("relu")(
+                BatchNormalization(axis=1, epsilon=0.0001)(
+                    Dense(128, kernel_regularizer=l2(0.01))(current)
+                )
+            )
+        )
+        current = Flatten()(current)
+
+    else:
         # Builds the inner convolution layers.
         for _ in range(3):
             current = Conv1D(
@@ -64,17 +72,17 @@ def model_fn(dimension, dense=True):
             current = Activation("relu")(
                 BatchNormalization(axis=2, epsilon=0.0001)(current)
             )
+            current = Flatten()(current)
 
-    # Handles the extracted three dimensional features.
-    current = Flatten()(current)
-    for _ in range(2):
-        current = Dropout(0.3)(
-            Activation("relu")(
-                BatchNormalization(axis=1, epsilon=0.0001)(
-                    Dense(512, kernel_regularizer=l2(0.01))(current)
+            # Handles the extracted three dimensional features.
+            for _ in range(2):
+                current = Dropout(0.3)(
+                    Activation("relu")(
+                        BatchNormalization(axis=1, epsilon=0.0001)(
+                            Dense(512, kernel_regularizer=l2(0.01))(current)
+                        )
+                    )
                 )
-            )
-        )
 
     # Extracts outputs.
     policy = Dense(dimension // 2 + 1, activation="softmax", name="policy")(current)
@@ -85,6 +93,7 @@ def model_fn(dimension, dense=True):
     model.compile(
         loss=["categorical_crossentropy", "mean_squared_error"], optimizer=Adam(0.01)
     )
+    plot_model(model, to_file="temp/visualize.png", show_shapes=True)
     return model
 
 
