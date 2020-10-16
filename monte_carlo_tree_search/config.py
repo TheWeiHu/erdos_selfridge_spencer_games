@@ -1,7 +1,7 @@
 class Config:
     levels = 3
-    numIters = 50
-    numEps = 25  # num self-play games to simulate during a new iteration.
+    numIters = 25
+    numEps = 30  # num self-play games to simulate during a new iteration.
     probabilisticThreshold = 15  # essentially useless if it is > level
     updateThreshold = 0.55  # model replacement win threshold
     maxlenOfQueue = 2000  # num game examples to train network

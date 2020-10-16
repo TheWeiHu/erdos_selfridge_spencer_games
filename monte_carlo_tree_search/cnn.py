@@ -11,22 +11,26 @@ from keras.regularizers import *
 
 
 class CNN:
-    def __init__(self, levels):
+    def __init__(self, levels=5):
         # two partitions, and an index to keep score
-        size = 2 * levels + 1
-        self.model = model_fn(size)
+        self.model = model_fn(levels)
+        self.levels = levels
 
     def train(self, samples):
         states, target_policy, target_value = list(zip(*samples))
-        states = np.asarray(states)
+        boards = [transform_state(x, self.levels)[0] for x in states]
+        scores = [transform_state(x, self.levels)[1] for x in states]
+        boards = np.asarray(boards)
+        scores = np.asarray(scores)
         target_policy = np.asarray(target_policy)
         target_value = np.asarray(target_value)
-        self.model.fit(x=states, y=[target_policy, target_value])
+        self.model.fit(x=[boards, scores], y=[target_policy, target_value])
 
     def test(self, state):
-        state = np.asarray(state.board)
-        # Enables batch of size one, for testing.
-        state = state[np.newaxis, :]
+        board, score = transform_state(state.board, self.levels)
+        score = np.asarray(score)[np.newaxis, :]
+        board = np.asarray(board)[np.newaxis, :]
+        state = [board, score]
         pi, v = self.model.predict(state)
         return pi[0], v[0]
 
@@ -43,41 +47,46 @@ class CNN:
         self.model.load_weights(filepath)
 
 
+def transform_state(state, levels):
+    return [state[1 : levels + 1], state[levels + 1 :]], [state[0]]
+
+
 def model_fn(dimension):
     # Adds an extra dimension for to use convolutional layers.
-    inputs = Input(shape=(dimension,))
-    current = Reshape((dimension, 1))(inputs)
+    score = current = Input(shape=(1,))
+    board = Input(shape=(2, dimension))
+    current = Reshape((2, dimension, 1))(board)
 
-    # Builds the inner convolution layers.
-    for _ in range(3):
-        current = Conv1D(
-            filters=128,
-            kernel_size=3,
-            kernel_initializer="Orthogonal",
-            padding="same",
-            kernel_regularizer=l2(0.01),
-        )(current)
-        current = Activation("relu")(
-            BatchNormalization(axis=2, epsilon=0.0001)(current)
-        )
+    current = Conv2D(
+        filters=64,
+        kernel_size=[3, 3],
+        kernel_initializer="Orthogonal",
+        padding="same",
+        kernel_regularizer=l2(0.01),
+    )(current)
+
+    current = Activation("relu")(
+        BatchNormalization(axis=2, epsilon=0.0001)(current)
+    )
 
     # Handles the extracted three dimensional features.
     current = Flatten()(current)
-    for _ in range(2):
-        current = Dropout(0.3)(
-            Activation("relu")(
-                BatchNormalization(axis=1, epsilon=0.0001)(
-                    Dense(512, kernel_regularizer=l2(0.01))(current)
-                )
+    current = Dropout(0.3)(
+        Activation("relu")(
+            BatchNormalization(axis=1, epsilon=0.0001)(
+                Dense(512, kernel_regularizer=l2(0.01))(current)
             )
         )
+    )
+
+    merged = Concatenate()([current, score])
 
     # Extracts outputs.
-    policy = Dense(dimension // 2 + 1, activation="softmax", name="policy")(current)
-    value = Dense(1, activation="tanh", name="value")(current)
+    policy = Dense(dimension + 1, activation="softmax", name="policy")(merged)
+    value = Dense(1, activation="tanh", name="value")(merged)
 
     # Sets up loss function, and uses gradiant descent with Adam optimizer.
-    model = Model(inputs=inputs, outputs=[policy, value])
+    model = Model(inputs=[board, score], outputs=[policy, value])
     model.compile(
         loss=["categorical_crossentropy", "mean_squared_error"], optimizer=Adam(0.01)
     )
@@ -85,5 +94,5 @@ def model_fn(dimension):
 
 
 if __name__ == "__main__":
-    m = CNN()
+    m = CNN(5)
     print(m.model.summary())

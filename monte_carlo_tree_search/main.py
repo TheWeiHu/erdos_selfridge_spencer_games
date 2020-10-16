@@ -22,7 +22,7 @@ def train():
 def play(OPTIONS):
     """main method"""
     opponent = lambda x: np.random.choice(np.where(x.get_valid_moves() == 1)[0])
-    num_games = 100
+    num_games = 1000
 
     if OPTIONS.optimal:
         opponent = get_optimal_move

@@ -41,14 +41,14 @@ class Gym:
         two_wins = 0
         draws = 0
 
-        for _ in tqdm(range(num)):
-            game_result = self.play_game(verbose=verbose)
-            if game_result == 1:
-                one_wins += 1
-            elif game_result == -1:
-                two_wins += 1
-            else:
-                draws += 1
+        # for _ in tqdm(range(num)):
+        #     game_result = self.play_game(verbose=verbose)
+        #     if game_result == 1:
+        #         one_wins += 1
+        #     elif game_result == -1:
+        #         two_wins += 1
+        #     else:
+        #         draws += 1
 
         self.player1, self.player2 = self.player2, self.player1
 
