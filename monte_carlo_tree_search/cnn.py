@@ -53,12 +53,13 @@ def transform_state(state, levels):
 
 def model_fn(dimension):
     # Adds an extra dimension for to use convolutional layers.
-    score = current = Input(shape=(1,))
+    score = Input(shape=(1,))
     board = Input(shape=(2, dimension))
     current = Reshape((2, dimension, 1))(board)
 
+    # Builds the inner convolution layers.
     current = Conv2D(
-        filters=64,
+        filters=128,
         kernel_size=[3, 3],
         kernel_initializer="Orthogonal",
         padding="same",
@@ -79,9 +80,8 @@ def model_fn(dimension):
         )
     )
 
-    merged = Concatenate()([current, score])
-
     # Extracts outputs.
+    merged = Concatenate()([current, score])
     policy = Dense(dimension + 1, activation="softmax", name="policy")(merged)
     value = Dense(1, activation="tanh", name="value")(merged)
 

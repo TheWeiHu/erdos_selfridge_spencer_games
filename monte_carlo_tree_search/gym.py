@@ -6,9 +6,10 @@ results = {1e-4: "Draw", 1: "Attacker Wins", -1: "Defender Wins"}
 
 
 class Gym:
-    def __init__(self, player1, player2):
+    def __init__(self, player1, player2, potential = None):
         self.player1 = player1
         self.player2 = player2
+        self.potential = potential
 
     def play_game(self, verbose=False):
         """Execute an episode of a game:
@@ -20,6 +21,8 @@ class Gym:
 
         cur_player = 1
         game = ESSGame()
+        if self.potential is not None:
+            game.initialize_random_2(self.potential)
 
         while not game.is_over():
 

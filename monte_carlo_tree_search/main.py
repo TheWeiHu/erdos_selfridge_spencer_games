@@ -22,7 +22,7 @@ def train():
 def play(OPTIONS):
     """main method"""
     opponent = lambda x: np.random.choice(np.where(x.get_valid_moves() == 1)[0])
-    num_games = 1000
+    num_games = 100
 
     if OPTIONS.optimal:
         opponent = get_optimal_move
@@ -33,7 +33,7 @@ def play(OPTIONS):
 
     trained_agent = lambda x: np.argmax(mcts.get_action_prob(x, False))
 
-    a = gym.Gym(trained_agent, opponent)
+    a = gym.Gym(trained_agent, opponent, potential = 0.99) # consider setting potential = 0.95, 0.99, etc.
     print(a.play_games(num_games, verbose=True))
 
 

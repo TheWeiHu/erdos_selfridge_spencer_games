@@ -1,4 +1,4 @@
-"""Optimal Algorithms for the Attacking Player
+ww"""Optimal Algorithms for the Attacking Player
 
 Algorithms generating optimal partitions for playing against suboptimal defenders.
 
@@ -82,7 +82,6 @@ def near_sighted_algorithm(position, weights):
     # The near-sighted defender will destroy any partition that has a biased value
     # greater than gamma.
     gamma = sum(i * j for (i, j) in zip(position, weights)) / 2
-
     optimal_value = position_value(position)
     optimal_set = position
     current_value = 0

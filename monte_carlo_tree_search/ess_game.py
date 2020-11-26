@@ -1,8 +1,8 @@
 import numpy as np
 
 from config import Config
-from math import floor
-from random import gauss
+from math import ceil, floor, log
+from random import gauss, random
 
 
 def piece_value(level):
@@ -11,17 +11,15 @@ def piece_value(level):
 
 class ESSGame:
     def __init__(self, board=None, potential=None, n=Config.levels):
+        self.n = n
         if board is None:
-            self.initialize_random(n)
+            self.initialize_random_2()
         else:
             self.board = board
         # TODO: ideally we find out where the floats are coming from
         self.board = self.board.astype(int)
-        if potential is None:
-            self.initialize_potential()
-        else:
+        if potential is not None:
             self.potential = potential
-        self.n = len(self.board) // 2
 
     def swap_partitions(self):
         new_board = [self.board[0]]
@@ -35,13 +33,29 @@ class ESSGame:
         # TODO: distance and factor symmetries
         pass
 
-    def initialize_random(self, n):
+    def initialize_random(self):
+        n = self.n
         board = [0]
         for i in range(n):
             pieces = max(0, int(gauss(2 / piece_value(i), 1)))
             board.append(pieces)
         board += [0] * n
         self.board = np.array(board)
+        self.initialize_potential()
+
+    def initialize_random_2(self, potential=None):
+        n = self.n
+        if potential is None:
+            potential = gauss(0.95, 0.75)
+        board = [0] * (n + 1)
+        while potential >= piece_value(n):
+            piece = min(ceil(log(random(), 0.5)), n)
+            if piece_value(piece) <= potential:
+                board[piece] += 1
+                potential -= piece_value(piece)
+        board += [0] * n
+        self.board = np.array(board)
+        self.initialize_potential()
 
     def initialize_potential(self):
         total = 0
@@ -111,6 +125,7 @@ class ESSGame:
     def display(self):
         return np.array2string(self.board, precision=2)
 
+
 def get_optimal_move(state):
     board = state.board
     n = len(board) // 2
@@ -123,4 +138,10 @@ def get_optimal_move(state):
     if valids.size == 0 or rp >= lp:
         return 0
     # choose smallest piece
-    return np.max(valids) + 1 
+    return np.max(valids) + 1
+
+
+if __name__ == "__main__":
+    game = ESSGame()
+    game.initialize_random_2(0.99)
+    print(game.board)
