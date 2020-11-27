@@ -12,6 +12,11 @@ class MCTS:
         self.initial_policy = {}  # returned by neural net
         self.end_states = {}  # stores the outcome of finished games
         self.valid_moves = {}  # stores valid moves for a given state
+    
+    def get_raw_action_prob(self, game):
+        policy, value = self.network.test(game)
+        print(policy, value)
+        return policy
 
     def get_action_prob(self, game, probabilistic=True):
         """perform numMCTSSims simulations of MCTS"""

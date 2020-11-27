@@ -31,9 +31,9 @@ class TrainRoutine:
             episode_step += 1
             probabilistic = episode_step < Config.probabilisticThreshold
             pi = self.mcts.get_action_prob(game, probabilistic)
-            
+
             train_examples.append([game.board, pi])
-            
+
             if max(pi) > pi[0] + 0.05:
                 new_pi = [0] * len(pi)
                 new_pi[0] = 1
@@ -49,13 +49,15 @@ class TrainRoutine:
                 score = game.get_score()
                 return [(x[0], x[1], score) for x in train_examples]
 
-    def learn(self):
+    def learn(self, preserve=[1, 5, 10, 25, 50]):
         """
         Performs numIters iterations with numEps episodes of self-play in each
         iteration. After every iteration, it retrains neural network with
         examples in trainExamples (which has a maximum length of maxlenofQueue).
         It then pits the new neural network against the old one and accepts it
         only if it wins >= updateThreshold fraction of games.
+
+        Keeps a copy of the best model at each of the preserve time steps. 
         """
         version = 0
 
@@ -70,8 +72,9 @@ class TrainRoutine:
 
             self.train_example_history.append(iter_train_examples)
 
-            # backup history to a file
-            self.save_train_examples(i)
+            # removing training examples that are too old
+            if len(self.train_example_history) > Config.maxIterHistory:
+                self.train_example_history.pop(0)
 
             # shuffle examples before training
             train_examples = []
@@ -106,14 +109,10 @@ class TrainRoutine:
                     Config.checkpoint, f"checkpoint_{i}.pth.tar"
                 )
                 self.network.save_checkpoint(Config.checkpoint, "best.pth.tar")
-        
-        print(f"num of versions: {version}")
 
-    def save_train_examples(self, i):
-        """save training examples"""
-        folder = Config.checkpoint
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        filename = os.path.join(folder, f"checkpoint_{i}.pth.tar.examples")
-        with open(filename, "wb+") as file:
-            pickle.dump(self.train_example_history, file)
+            if i in preserve:
+                self.network.save_checkpoint(
+                    Config.checkpoint, "best-" + str(i) + ".pth.tar"
+                )
+
+        print(f"num of versions: {version}")

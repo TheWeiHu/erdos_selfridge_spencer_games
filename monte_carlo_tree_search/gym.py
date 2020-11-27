@@ -38,30 +38,40 @@ class Gym:
 
         return game.is_over()
 
-    def play_games(self, num, verbose=False):
+    def play_games(self, num, mode=0, verbose=False):
+        """
+        The mode variable determines which agent plays what role
+        When:
+            mode == 0, both players take turn playing both roles
+            mode == 1, player 1 plays attacker, player 2 plays defender
+            mode == 2, player 2 plays attacker, player 1 plays defender
+        """
         num //= 2
         one_wins = 0
         two_wins = 0
         draws = 0
 
-        # for _ in tqdm(range(num)):
-        #     game_result = self.play_game(verbose=verbose)
-        #     if game_result == 1:
-        #         one_wins += 1
-        #     elif game_result == -1:
-        #         two_wins += 1
-        #     else:
-        #         draws += 1
+        if not mode or mode == 1:
+            for _ in tqdm(range(num)):
+                game_result = self.play_game(verbose=verbose)
+                if game_result == 1:
+                    one_wins += 1
+                elif game_result == -1:
+                    two_wins += 1
+                else:
+                    draws += 1
 
         self.player1, self.player2 = self.player2, self.player1
 
-        for _ in tqdm(range(num)):
-            game_result = self.play_game(verbose=verbose)
-            if game_result == -1:
-                one_wins += 1
-            elif game_result == 1:
-                two_wins += 1
-            else:
-                draws += 1
+
+        if not mode or mode == 2:
+            for _ in tqdm(range(num)):
+                game_result = self.play_game(verbose=verbose)
+                if game_result == -1:
+                    one_wins += 1
+                elif game_result == 1:
+                    two_wins += 1
+                else:
+                    draws += 1
 
         return one_wins, two_wins, draws

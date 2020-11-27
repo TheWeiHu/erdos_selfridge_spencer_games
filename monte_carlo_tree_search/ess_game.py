@@ -71,8 +71,15 @@ class ESSGame:
 
         if player == 1:
             if not action:
-                return ESSGame(new_board, self.potential), -player
-
+                # the attacker chose the "done!" action
+                if random() > 0.5:
+                    return ESSGame(new_board, self.potential), -player
+                # swap the order of the partitions with a 50% chance
+                left, right = new_board[1 : (self.n + 1)], new_board[(self.n + 1) :]
+                result = np.concatenate([[new_board[0]], right, left])
+                return ESSGame(result, self.potential), -player
+           
+            # the attacker did not choose "done!"
             new_board = np.copy(self.board)
             assert new_board[action] > 0
             new_board[action] -= 1

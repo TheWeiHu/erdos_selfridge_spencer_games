@@ -60,7 +60,7 @@ def model_fn(dimension):
     # Builds the inner convolution layers.
     current = Conv2D(
         filters=128,
-        kernel_size=[3, 3],
+        kernel_size=[2, 3],
         kernel_initializer="Orthogonal",
         padding="same",
         kernel_regularizer=l2(0.01),

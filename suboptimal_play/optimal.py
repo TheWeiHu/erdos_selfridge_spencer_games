@@ -1,4 +1,4 @@
-ww"""Optimal Algorithms for the Attacking Player
+"""Optimal Algorithms for the Attacking Player
 
 Algorithms generating optimal partitions for playing against suboptimal defenders.
 
