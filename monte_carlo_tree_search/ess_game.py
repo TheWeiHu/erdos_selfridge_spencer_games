@@ -124,7 +124,7 @@ class ESSGame:
             return -1
 
     def get_score(self):
-        return self.board[0]
+        return  0 if not self.board[0] else 1
 
     def string_representation(self):
         return self.board.tostring() + ("p" + str(self.potential)).encode()

@@ -15,7 +15,11 @@ class MCTS:
     
     def get_raw_action_prob(self, game):
         policy, value = self.network.test(game)
-        print(policy, value)
+        valids = game.get_valid_moves()
+        # keep only valid moves
+        policy *= valids
+        # renormalize
+        policy /= np.sum(policy)
         return policy
 
     def get_action_prob(self, game, probabilistic=True):

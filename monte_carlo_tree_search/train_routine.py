@@ -45,11 +45,11 @@ class TrainRoutine:
 
             result = game.is_over()
 
-            if result != 0:
+            if result != 0: # this means the game is over!
                 score = game.get_score()
                 return [(x[0], x[1], score) for x in train_examples]
 
-    def learn(self, preserve=[1, 5, 10, 25, 50]):
+    def learn(self, preserve=[1, 5, 10, 25, 50, 100, 200, 500, 750]):
         """
         Performs numIters iterations with numEps episodes of self-play in each
         iteration. After every iteration, it retrains neural network with

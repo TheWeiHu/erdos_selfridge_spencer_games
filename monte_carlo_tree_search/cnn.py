@@ -83,7 +83,7 @@ def model_fn(dimension):
     # Extracts outputs.
     merged = Concatenate()([current, score])
     policy = Dense(dimension + 1, activation="softmax", name="policy")(merged)
-    value = Dense(1, activation="tanh", name="value")(merged)
+    value = Dense(1, activation="sigmoid", name="value")(merged)
 
     # Sets up loss function, and uses gradiant descent with Adam optimizer.
     model = Model(inputs=[board, score], outputs=[policy, value])
