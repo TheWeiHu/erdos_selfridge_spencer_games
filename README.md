@@ -11,6 +11,7 @@ The project will also fulfill the requirements of the [CSI 4900 - Honours Projec
 
 
 This [research paper](https://arxiv.org/pdf/1711.02301) is the original inspiration for the project.
+Our code builds uses [this repo](cite: https://github.com/suragnair/alpha-zero-general) as a head start.
 
 
 ![alt text](https://i.imgur.com/XMMzVQm.png "ESS Game Play")
