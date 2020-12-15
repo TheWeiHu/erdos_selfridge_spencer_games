@@ -56,7 +56,7 @@ def play(OPTIONS):
     mcts = MCTS(network)
 
     a = gym.Gym(trained_agent, opponent, potential=0.99)
-    print(a.play_games(num_games, mode=0, verbose=True))
+    print(a.play_games(num_games, mode=2, verbose=True))
 
 
 if __name__ == "__main__":

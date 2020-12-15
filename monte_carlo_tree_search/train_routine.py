@@ -45,11 +45,11 @@ class TrainRoutine:
 
             result = game.is_over()
 
-            if result != 0: # this means the game is over!
+            if result != 0:  # this means the game is over!
                 score = game.get_score()
                 return [(x[0], x[1], score) for x in train_examples]
 
-    def learn(self, preserve=[1, 5, 10, 25, 50, 100, 200, 500, 750]):
+    def learn(self):
         """
         Performs numIters iterations with numEps episodes of self-play in each
         iteration. After every iteration, it retrains neural network with
@@ -60,6 +60,7 @@ class TrainRoutine:
         Keeps a copy of the best model at each of the preserve time steps. 
         """
         version = 0
+        changed = False
 
         for i in range(Config.numIters):
             print(f"Iteration {i + 1}")
@@ -105,14 +106,16 @@ class TrainRoutine:
             else:
                 print(f"network version {version}")
                 version += 1
+                changed = True
                 self.network.save_checkpoint(
                     Config.checkpoint, f"checkpoint_{i}.pth.tar"
                 )
                 self.network.save_checkpoint(Config.checkpoint, "best.pth.tar")
 
-            if i in preserve:
+            if i == 0 or (i % 10 == 0 and changed):
                 self.network.save_checkpoint(
                     Config.checkpoint, "best-" + str(i) + ".pth.tar"
                 )
+                changed = False
 
         print(f"num of versions: {version}")
